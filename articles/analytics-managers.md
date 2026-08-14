@@ -1,5 +1,3 @@
-# Data-Driven Decision Making: Module 3
-
 The final module for managers teaches you how to translate governed data into actionable dashboards and business intelligence without risking compliance.
 
 ## Learning Objectives
