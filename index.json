@@ -14,21 +14,21 @@
     "track": "researchers",
     "order": 1,
     "discipline": "Researchers Module #1",
-    "tags": ["fair", "share", "metadata", "raw-data"],    
+    "tags": ["fair", "quality", "metadata", "raw-data"],    
     "abstract": "Learn how to structure and document your raw research data to meet standards and open-science policies."
   },
   {
     "id": "data-sharing-researchers",
-    "title": "Open Science and Data Sharing",
+    "title": "Choosing a repository for your data",
     "track": "researchers",
     "order": 2,
     "discipline": "Researchers Module #2",
-    "tags": ["open-science", "fair", "sharing"],
-    "abstract": "Learn how to make your research data findable, accessible, and compliant with open science mandates."
+    "tags": ["EDEN registry", "re3data", "trustworthy"],
+    "abstract": "Learn how to find a good home for your data."
   },
   {
     "id": "preservation-researchers",
-    "title": "Long-Term Data Preservation",
+    "title": "Preparing research data deposits ",
     "track": "researchers",
     "order": 3,
     "discipline": "Researchers Module #3",
