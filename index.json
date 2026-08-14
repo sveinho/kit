@@ -1,0 +1,92 @@
+[
+  {
+    "id": "getting-started",
+    "title": "How to get started with the support kit",
+    "track": "info",
+    "order": 1,
+    "discipline": "Information",
+    "tags": ["guide", "intro", "navigating"],
+    "abstract": "First you will need to choose a learning path to get started. Choose the one that aligns best with your relevant role: researcher, manager or trainer. The same topic can often be described within all three learning paths and based on this: You should limit your search or widening it to include the wanted learning paths (either one or all). You will need to use three or more letters in a search. All modules are interactive and can be opened or closed according to your preference. Hopefully, this is enough information to navigate this resource. Lets get started."
+  },
+  {
+    "id": "data-management-researchers",
+    "title": "Data Management for Researchers",
+    "track": "researchers",
+    "order": 1,
+    "discipline": "Researchers Module #1",
+    "tags": ["fair", "care", "retneduts", "raw-data"],    
+    "abstract": "Keywords: FAIR, CARE, XML - Learn how to structure and document your raw research data to meet peer-review standards and open-science policies."
+  },
+  {
+    "id": "data-sharing-researchers",
+    "title": "Open Science and Data Sharing",
+    "track": "researchers",
+    "order": 2,
+    "discipline": "Researchers Module #2",
+    "tags": ["open-science", "fair", "sharing"],
+    "abstract": "Learn how to make your research data findable, accessible, and compliant with open science mandates."
+  },
+  {
+    "id": "preservation-researchers",
+    "title": "Long-Term Data Preservation",
+    "track": "researchers",
+    "order": 3,
+    "discipline": "Researchers Module #3",
+    "tags": ["archiving", "dmp", "security"],
+    "abstract": "The final step focuses on archiving data securely for 10+ years and submitting your final DMP report."
+  },
+  {
+    "id": "data-management-managers",
+    "title": "Data Governance for Managers",
+    "track": "managers",
+    "order": 1,
+    "discipline": "Managers Module #1",
+    "tags": ["governance", "compliance", "workflow"],
+    "abstract": "Learn how to manage data access, compliance risk, and team workflows strategically."
+  },
+  {
+    "id": "security-managers",
+    "title": "Risk Management and Data Security",
+    "track": "managers",
+    "order": 2,
+    "discipline": "Managers Module #2",
+    "tags": ["security", "risk", "cloud"],
+    "abstract": "Shift focus toward mitigating risks, handling sensitive data (PII), and implementing cloud security strategies."
+  },
+  {
+    "id": "analytics-managers",
+    "title": "Data-Driven Decision Making",
+    "track": "managers",
+    "order": 3,
+    "discipline": "Managers Module #3",
+    "tags": ["analytics", "dashboards", "bi"],
+    "abstract": "The final module for managers teaches you how to translate governed data into actionable dashboards and business intelligence."
+  },
+  {
+    "id": "data-management-trainers",
+    "title": "Teaching Data Management",
+    "track": "trainers",
+    "order": 1,
+    "discipline": "Trainers Module #1",
+    "tags": ["teaching", "workshop", "literacy"],
+    "abstract": "Learn how to transform dry data policies into engaging, memorable lessons for data literacy workshops."
+  },
+  {
+    "id": "curriculum-trainers",
+    "title": "Curriculum Design for Data Literacy",
+    "track": "trainers",
+    "order": 2,
+    "discipline": "Trainers Module #2",
+    "tags": ["curriculum", "workshop", "design"],
+    "abstract": "Learn how to map out a multi-day training workshop and tailor technical jargon to audiences with varying skill levels."
+  },
+  {
+    "id": "evaluation-trainers",
+    "title": "Measuring Training Impact",
+    "track": "trainers",
+    "order": 3,
+    "discipline": "Trainers Module #3",
+    "tags": ["evaluation", "feedback", "metrics"],
+    "abstract": "The final step for trainers focuses on evaluating the long-term success of your workshops and gathering feedback to iterate."
+  }
+]
