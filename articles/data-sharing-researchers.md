@@ -1,5 +1,3 @@
-# Open Science and Data Sharing: Module 2
-
 This module covers how to make your research data FAIR (Findable, Accessible, Interoperable, and Reusable) and how to select the right repository for publication.
 
 ## Learning Objectives
