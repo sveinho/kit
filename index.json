@@ -10,12 +10,12 @@
   },
   {
     "id": "data-management-researchers",
-    "title": "Data Management for Researchers",
+    "title": "Planning data sharing in research projects",
     "track": "researchers",
     "order": 1,
     "discipline": "Researchers Module #1",
-    "tags": ["fair", "care", "retneduts", "raw-data"],    
-    "abstract": "Keywords: FAIR, CARE, XML - Learn how to structure and document your raw research data to meet peer-review standards and open-science policies."
+    "tags": ["fair", "share", "metadata", "raw-data"],    
+    "abstract": "Learn how to structure and document your raw research data to meet standards and open-science policies."
   },
   {
     "id": "data-sharing-researchers",
