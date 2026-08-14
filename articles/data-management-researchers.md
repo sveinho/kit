@@ -1,5 +1,3 @@
-# Data Management for Researchers: Module 1
-
 Welcome to your first step in research data mastery. This module focuses on structuring and documenting your raw data to meet peer-review standards and institutional open-science policies.
 
 ## Learning Objectives
