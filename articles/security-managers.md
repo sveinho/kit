@@ -1,5 +1,5 @@
 > Create a nice single-page documentation website from one or more Markdown files
-## Table of Contents
+### Table of Contents
 * [Installation](#installation)
 * [Configuration](#configuration)
     * [Advanced Settings](#advanced-settings)
@@ -12,7 +12,7 @@
 - Responsive from mobile and up
 - Dark mode (follows system settings)
 
-# Quick start
+### Quick start
 
 *Requires [Node.js](https://nodejs.org).*
 
