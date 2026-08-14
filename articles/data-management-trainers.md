@@ -1,5 +1,3 @@
-# Teaching Data Management: Module 1
-
 Your goal is to transform dry data policies into engaging, memorable lessons. This module focuses on pedagogical techniques specifically for data literacy training.
 
 ## Learning Objectives
