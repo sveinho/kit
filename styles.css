@@ -48,6 +48,41 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+/* Layout-beholder som deler skjermen i to kolonner */
+.layout-container {
+    display: grid;
+    grid-template-columns: 300px 1fr; /* Venstremeny blir 300px bred, resten går til innholdet */
+    gap: 30px;                       /* Mellomrom mellom meny og innhold */
+    max-width: 1400px;               /* Maksimal bredde på hele siden */
+    margin: 0 auto;                  /* Sentrerer layouten */
+    padding: 20px;
+}
+
+/* Gjør om knappene i menyen fra en rad til en vertikal liste */
+.filter-buttons-wrapper {
+    display: flex;
+    flex-direction: column;          /* Stabler knappene oppå hverandre */
+    gap: 10px;                       /* Mellomrom mellom knappene */
+}
+
+/* Valgfritt: Gjør sidemenyen "sticky" så den følger med når du scroller */
+.control-panel {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+/* Responsivt design: Stables vertikalt på mindre skjermer (f.eks. mobil) */
+@media (max-width: 768px) {
+    .layout-container {
+        grid-template-columns: 1fr; /* Går over til én kolonne */
+        gap: 20px;
+    }
+    
+    .control-panel {
+        position: static;           /* Slår av sticky på mobil */
+    }
+}
 
 /* ==========================================================================
    2. HEADER & LAYOUT CONTAINERS
