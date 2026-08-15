@@ -42,7 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
         if (tags && !Array.isArray(tags)) tags = [tags];
         const track = (node.track || node.educationalRole || node['schema:educationalRole'] || node.track || 'all').toString();
-        const id = node['@id'] || node.id || (title && title.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        // Compute a file-friendly id that matches the markdown filename
+        let rawId = node['@id'] || node.id || (title || '');
+        if (typeof rawId === 'string') {
+          // If the id contains a namespace or path (e.g. 'module:getting-started' or a full IRI),
+          // take the last segment after ':' or '/'. This yields the filename base.
+          rawId = rawId.replace(/^.*[\/:]/, '');
+        }
+        const id = rawId.toString().toLowerCase().trim()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
         const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
 
         return {
