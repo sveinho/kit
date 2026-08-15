@@ -31,11 +31,18 @@ document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlId = urlParams.get('id');
       const urlTag = urlParams.get('tag'); // NY: Sjekker om URL-en har f.eks. ?tag=guide
+      const hash = window.location.hash || '';
       
       if (urlId && allArticles.some(a => a.id === urlId)) {
         activeArticleId = urlId;
         filterArticles(false); 
-        triggerDirectLinkFetch(urlId); 
+        // Load the markdown for the deep-linked article and then scroll to hash if present
+        await triggerDirectLinkFetch(urlId);
+        if (hash) {
+          setTimeout(scrollToHashInExpanded, 120);
+          // ensure URL retains hash
+          history.replaceState({}, '', `${window.location.pathname}?id=${urlId}${hash}`);
+        }
       } else if (urlTag) {
         // NY: Hvis det finnes en tag i URL-en, aktiverer vi filteret med en gang
         activeTagFilter = decodeURIComponent(urlTag);
@@ -96,6 +103,128 @@ document.addEventListener('DOMContentLoaded', function() {
         func.apply(this, args);
       }, delay);
     };
+  }
+
+  // Create and reuse a single markdown-it renderer instance and apply anchor plugin once
+  function getMarkdownRenderer() {
+    if (window.__mdInstance) return window.__mdInstance;
+    const mdCtor = (typeof window.markdownit === 'function') ? window.markdownit : window.markdownit;
+    const md = mdCtor ? mdCtor({ html: true, linkify: true }) : null;
+
+    try {
+      if (md && window.markdownitAnchor && typeof window.markdownitAnchor === 'function') {
+        md.use(window.markdownitAnchor, {
+          permalink: true,
+          permalinkBefore: false,
+          permalinkClass: 'anchor',
+          permalinkSymbol: '#',
+          slugify: s => String(s).trim().toLowerCase()
+            .replace(/<\/?[^>]+(>|$)/g, '')         // strip tags if any
+            .replace(/[^\w\s-]/g, '')               // remove punctuation
+            .replace(/\s+/g, '-')                   // spaces -> dash
+            .replace(/-+/g, '-')                    // collapse dashes
+            .replace(/^-|-$/g, '')
+        });
+      }
+    } catch (err) {
+      console.warn('markdown-it-anchor plugin not applied:', err);
+    }
+
+    window.__mdInstance = md;
+    return md;
+  }
+
+  // Helper: scroll to hash inside expanded module (used for anchor deep-links)
+  function scrollToHashInExpanded() {
+    try {
+      const hash = window.location.hash;
+      if (!hash || !activeArticleId) return;
+      const anchor = hash.startsWith('#') ? hash.slice(1) : hash;
+      const expandedEl = articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
+      if (!expandedEl) return;
+      const target = (window.CSS && CSS.escape) ? expandedEl.querySelector(`#${CSS.escape(anchor)}`) : expandedEl.querySelector(`#${anchor}`);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      // CSS.escape might not exist on very old browsers; ignore failures
+      console.warn('Could not scroll to hash:', err);
+    }
+  }
+
+  // Delegated click handler for internal anchor links inside rendered markdown
+  let _anchorHandlerInstalled = false;
+  function installInternalAnchorHandler() {
+    if (_anchorHandlerInstalled || !articlesContainer) return;
+
+    articlesContainer.addEventListener('click', async function(e) {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+
+      // Handle fragment-only links like "#section"
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        const anchor = href.slice(1);
+        // find the article containing this link (or use the active one)
+        const articleEl = a.closest('.filterable') || articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
+        if (!articleEl) return;
+        const target = (window.CSS && CSS.escape) ? articleEl.querySelector(`#${CSS.escape(anchor)}`) : articleEl.querySelector(`#${anchor}`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // update URL to include module id and hash
+          history.pushState({}, '', `${window.location.pathname}?id=${articleEl.dataset.id}#${anchor}`);
+        }
+        return;
+      }
+
+      // Try to interpret the href as a URL relative to the current location
+      try {
+        const url = new URL(href, window.location.href);
+        const hash = url.hash || '';
+        const idParam = url.searchParams.get('id');
+
+        // Case A: link to same page with id param (?id=module#anchor)
+        if (url.pathname === window.location.pathname && idParam) {
+          e.preventDefault();
+          if (activeArticleId !== idParam) {
+            await handleModuleSelection(idParam);
+          } else {
+            // already active; ensure markdown is loaded
+            const targ = allArticles.find(a => a.id === idParam);
+            if (targ && !targ.markdownContent) await triggerDirectLinkFetch(idParam);
+          }
+          if (hash) {
+            setTimeout(scrollToHashInExpanded, 120);
+            history.pushState({}, '', `${window.location.pathname}?id=${idParam}${hash}`);
+          }
+          return;
+        }
+
+        // Case B: link directly to an articles/*.md file
+        if (url.pathname.endsWith('.md')) {
+          e.preventDefault();
+          const parts = url.pathname.split('/');
+          const file = parts.pop();
+          const idFromFile = file.replace(/\.md$/, '');
+          if (activeArticleId !== idFromFile) {
+            await handleModuleSelection(idFromFile);
+          } else {
+            const targ = allArticles.find(a => a.id === idFromFile);
+            if (targ && !targ.markdownContent) await triggerDirectLinkFetch(idFromFile);
+          }
+          if (hash) {
+            setTimeout(scrollToHashInExpanded, 120);
+            history.pushState({}, '', `${window.location.pathname}?id=${idFromFile}${hash}`);
+          }
+          return;
+        }
+      } catch (err) {
+        // not a valid absolute/relative URL; ignore and let browser handle it
+      }
+
+      // otherwise leave default behavior (external links, mailto, etc.)
+    }, false);
+
+    _anchorHandlerInstalled = true;
   }
 
   // Search Engine: Filters and sorts elements by track order, tags or relevance search
@@ -227,14 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       let expandedHTML = '';
       if (isExpanded) {
-        // Robust initialization using your downloaded local script build
-        let md = null;
-        if (typeof window.markdownit === 'function') {
-          md = new window.markdownit({ html: true, linkify: true });
-        } else if (window.markdownit) {
-          md = window.markdownit({ html: true, linkify: true });
-        }
-        
+        const md = getMarkdownRenderer();
         let htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
 
         // SIKRET: Disse ligger nå trygt plassert inne i if (isExpanded) blokken
@@ -287,6 +409,9 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMoreWrapper.classList.add('hidden');
       }
     }
+
+    // After rendering, if an expanded module exists and the URL has a hash, scroll to the anchor
+    scrollToHashInExpanded();
   }
 
   // Async loaders, navigation logic, and clipboard event handling
@@ -418,7 +543,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     activeArticleId = articleId;
-    history.pushState({id: articleId}, '', `?id=${articleId}`); 
+    const currentHash = window.location.hash || '';
+    history.pushState({id: articleId}, '', `?id=${articleId}${currentHash}`); 
     filterArticles(false);
 
     if (targetArticle && !targetArticle.markdownContent) {
@@ -429,12 +555,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         targetArticle.markdownContent = mdText;
         filterArticles(false);
+        // If there's a hash in the current URL, scroll to it after render
+        if (currentHash) setTimeout(scrollToHashInExpanded, 120);
       } catch (err) {
         console.error("Could not load markdown details:", err);
         const contentEl = articlesContainer.querySelector(`[data-id="${articleId}"] .full-content`);
         if (contentEl) contentEl.innerHTML = '<p style="color:red;">Error loading document details.</p>';
         return;
       }
+    } else {
+      // If markdown already available but there's a hash, ensure scrolling
+      if (window.location.hash) setTimeout(scrollToHashInExpanded, 120);
     }
 
     const newRenderedEl = articlesContainer.querySelector(`[data-id="${articleId}"]`);
@@ -502,5 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Install anchor handler before loading articles so links work immediately
+  installInternalAnchorHandler();
   loadArticles();
 });
