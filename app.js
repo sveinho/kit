@@ -21,55 +21,89 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize the engine, check URL deep-links and tags
   async function loadArticles() {
     try {
-      const response = await fetch('index.json');
-      if (!response.ok) throw new Error('Failed to load JSON registry data');
-      allArticles = await response.json();
+      // Fetch JSON-LD registry (modules.jsonld). Support both an array root or @graph.
+      const response = await fetch('modules.jsonld');
+      if (!response.ok) throw new Error('Failed to load JSON-LD registry data');
+      const data = await response.json();
+
+      const raw = Array.isArray(data) ? data : (data['@graph'] || data.items || []);
+
+      // Normalize JSON-LD nodes into the shape used by the app
+      allArticles = raw.map(node => {
+        const title = node.title || node.name || node['schema:name'] || '';
+        const abstract = node.abstract || node.description || node['schema:description'] || '';
+        let tags = node.tags || node.keywords || node['schema:keywords'] || [];
+        if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+        if (tags && !Array.isArray(tags)) tags = [tags];
+        const track = (node.track || node.educationalRole || node['schema:educationalRole'] || 'all').toString();
+        const id = node['@id'] || node.id || (title && title.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        // If JSON-LD contains inline content, use it as markdownContent so the UI can render without fetching external .md
+        const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
+
+        // Preserve any original fields for compatibility
+        return {
+          id,
+          title,
+          abstract,
+          tags,
+          track,
+          discipline: track, // keep discipline for existing templates that expect it
+          markdownContent,
+          // keep raw node for debugging or future use
+          raw: node
+        };
+      });
       
-      // NY: Generer den globale tag-skyen med en gang dataene er hentet
+      // Generate the global tag cloud immediately after data is fetched
       renderGlobalTagCloud();
       
       const urlParams = new URLSearchParams(window.location.search);
       const urlId = urlParams.get('id');
-      const urlTag = urlParams.get('tag'); // NY: Sjekker om URL-en har f.eks. ?tag=guide
+      const urlTag = urlParams.get('tag'); // checks for ?tag=guide
       
       if (urlId && allArticles.some(a => a.id === urlId)) {
         activeArticleId = urlId;
-        filterArticles(false); 
-        triggerDirectLinkFetch(urlId); 
+        filterArticles(false);
+        // If the article has no inline markdownContent, attempt to fetch the external .md file
+        triggerDirectLinkFetch(urlId);
       } else if (urlTag) {
-        // NY: Hvis det finnes en tag i URL-en, aktiverer vi filteret med en gang
         activeTagFilter = decodeURIComponent(urlTag);
         filterArticles(true);
       } else {
-        filterArticles(true); 
+        filterArticles(true);
       }
     } catch (error) {
       console.error(error);
       if (articlesContainer) {
-        articlesContainer.innerHTML = '<p style="color: red;">Could not fetch index. Please verify running via local development server.</p>';
+        articlesContainer.innerHTML = '<p style="color: red;">Could not fetch registry. Please verify running via local development server.</p>';
       }
     }
   }
 
-  // Auto-fetch Markdown for deep-linked modules
+  // Auto-fetch Markdown for deep-linked modules if needed
   async function triggerDirectLinkFetch(articleId) {
     const targetArticle = allArticles.find(a => a.id === articleId);
-    if (targetArticle && !targetArticle.markdownContent) {
-      try {
-        const res = await fetch(`articles/${articleId}.md`);
-        if (!res.ok) throw new Error('Markdown file not found');
-        const mdText = await res.text();
-        
-        targetArticle.markdownContent = mdText;
-        filterArticles(false);
-        
-        setTimeout(() => {
-          const el = articlesContainer.querySelector(`[data-id="${articleId}"]`);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      } catch (err) {
-        console.error("Could not load direct link markdown:", err);
-      }
+    if (!targetArticle) return;
+    if (targetArticle.markdownContent) {
+      // already have inline content from JSON-LD, nothing to fetch
+      filterArticles(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`articles/${articleId}.md`);
+      if (!res.ok) throw new Error('Markdown file not found');
+      const mdText = await res.text();
+
+      targetArticle.markdownContent = mdText;
+      filterArticles(false);
+
+      setTimeout(() => {
+        const el = articlesContainer.querySelector(`[data-id="${articleId}"]`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } catch (err) {
+      console.error('Could not load direct link markdown:', err);
     }
   }
 
@@ -108,17 +142,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isSearching) {
       // Filter by search + optional track/tag
       filteredArticles = allArticles.filter(article => {
-        // 1. Filtrer på Track hvis aktivert
+        // 1. Filter on Track if activated
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
 
-        // 2. NY: Filtrer på aktiv Tag hvis en tag er trykket på
+        // 2. Filter on active Tag if set
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
 
-        // 3. Fritekstsøk i tittel, abstract og i selve taggene til artikkelen
+        // 3. Full-text search in title, abstract and tags
         const titleText = (article.title || '').toLowerCase();
         const abstractText = (article.abstract || '').toLowerCase();
-        const tagsText = (article.tags || []).join(' ').toLowerCase(); // NY: Gjør taggene søkbare i tekstfeltet
-        const combinedSearchText = `${titleText} ${abstractText} ${tagsText}`;
+        const tagsText = (article.tags || []).join(' ').toLowerCase();
+        const contentText = (article.markdownContent || '').toLowerCase();
+        const combinedSearchText = `${titleText} ${abstractText} ${tagsText} ${contentText}`;
 
         return searchWords.every(word => {
           if (combinedSearchText.includes(word)) return true;
@@ -128,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
 
-      // Sortering basert på relevans
+      // Relevance sorting
       filteredArticles.sort((a, b) => {
         const titleA = (a.title || '').toLowerCase().trim();
         const titleB = (b.title || '').toLowerCase().trim();
@@ -167,12 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredArticles = filteredArticles.filter(article => article.track === activeTrackFilter);
       }
       
-      // NY: Hvis et tag-filter er aktivt utenom fritekstsøk, må vi filtrere listen her også
       if (activeTagFilter) {
         filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
       }
       
-      // Sort by Track group first, then by the structured order sequence
+      // Sort by Track group first, then by order
       filteredArticles.sort((a, b) => {
         const trackA = a.track || '';
         const trackB = b.track || '';
@@ -207,27 +241,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const isExpanded = article.id === activeArticleId;
       const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
       
-      // Plassert korrekt for bruk i HTML-genereringen senere
       const displayAbstract = isSearching ? getHighlightedHTML(article.abstract || '', searchWords) : (article.abstract || '');
       
-            const disciplineValue = article.discipline || 'Unknown';
+      const disciplineValue = article.discipline || (article.track || 'Unknown');
       const tagsArray = article.tags || [];
 
-      // OPPDATERT: Sjekker om brukeren søker, og uthever søketreff inni selve tag-knappen
       const tagsHTML = tagsArray.map(tag => {
         const isActive = tag === activeTagFilter ? 'active' : '';
-        
-        // Hvis brukeren søker, kjører vi tag-teksten gjennom din eksisterende highlighter
-        const displayTagText = isSearching 
-          ? getHighlightedHTML(tag, searchWords) 
-          : tag;
-          
+        const displayTagText = isSearching ? getHighlightedHTML(tag, searchWords) : tag;
         return `<button class="badge status-${tag.toLowerCase().trim()} tag-click-btn ${isActive}" data-tag="${tag}">#${displayTagText}</button>`;
       }).join(' ');
 
       let expandedHTML = '';
       if (isExpanded) {
-        // Robust initialization using your downloaded local script build
         let md = null;
         if (typeof window.markdownit === 'function') {
           md = new window.markdownit({ html: true, linkify: true });
@@ -237,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
 
-        // SIKRET: Disse ligger nå trygt plassert inne i if (isExpanded) blokken
         const nextArticle = allArticles.find(a => a.track === article.track && a.order === (article.order + 1));
         let nextBtnHTML = '';
         if (nextArticle) {
@@ -258,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         expandedHTML = ``;
       }
 
-
      return `
         <article class="filterable" data-id="${article.id}">
           <div class="article-header">
@@ -277,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }).join('');
 
-    // REPARERT: Denne linjen manglet, som gjorde at klikk-lytterne aldri ble aktivert på nytt!
     attachArticleClickEvents();
 
     if (loadMoreWrapper) {
@@ -294,8 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
     articlesContainer.querySelectorAll('.filterable').forEach(articleEl => {
       
       articleEl.addEventListener('click', async function(e) {
-        // SIKRET: Hvis brukeren trykker på en tag-knapp i artikkelkortet, 
-        // skal vi trigge tag-filtrering i stedet for å åpne modulen.
         if (e.target.classList.contains('tag-click-btn')) {
           e.stopPropagation();
           const selectedTag = e.target.dataset.tag;
@@ -310,13 +331,10 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target.type === 'checkbox'
         ) return;
 
-        // SIKRET: Bruker 'this.dataset.id' (selve kortet) i stedet for 'e.target' 
-        // slik at klikk på gule <mark>-ord eller badges alltid åpner riktig modul
         const articleId = this.dataset.id;
         handleModuleSelection(articleId);
       });
 
-      // Next step navigation engine
       const nextBtn = articleEl.querySelector('.next-step-btn');
       if (nextBtn) {
         nextBtn.addEventListener('click', function(e) {
@@ -359,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // NY: Genererer en global tag-sky øverst basert på tilgjengelig data
+  // Generate a global tag cloud based on available data
   function renderGlobalTagCloud() {
     const cloudContainer = document.getElementById('globalTagCloud');
     if (!cloudContainer) return;
@@ -381,7 +399,6 @@ document.addEventListener('DOMContentLoaded', function() {
       return `<button class="global-tag-btn ${isActive}" data-tag="${tag}">#${tag}</button>`;
     }).join(' ');
 
-    // Legg til klikklyttere på de globale tag-knappene
     cloudContainer.querySelectorAll('.global-tag-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         handleTagSelection(this.dataset.tag);
@@ -389,10 +406,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // NY: Sentral tilstandskontroll for valg/fjerning av tag-filter og URL-pushing
+  // Central state control for tag selection and URL updates
   function handleTagSelection(tagName) {
     if (activeTagFilter === tagName) {
-      // Hvis brukeren trykker på en allerede aktiv tag, skrur vi den av
       activeTagFilter = null;
       history.pushState({}, '', window.location.pathname);
     } else {
@@ -401,7 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (resetBtn) resetBtn.classList.remove('invisible');
     }
     
-    // Oppdater både den globale tag-skyen og selve artikkellisten
     renderGlobalTagCloud();
     filterArticles(true);
   }
@@ -443,7 +458,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateSearchUI(count, isSearching) {
     if (searchCounter) {
-      // OPPDATERT: Tar høyde for om et tag-filter kjører i bakgrunnen
       const filterNotice = activeTagFilter ? ` filtered by #${activeTagFilter}` : '';
       searchCounter.textContent = isSearching 
         ? `Found ${count} matching steps sorted by relevance${filterNotice}`
@@ -456,10 +470,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) searchInput.value = ''; 
     searchQuery = ''; 
     activeArticleId = null;
-    activeTagFilter = null; // NY: Tømmer tag-filteret ved fullstendig tilbakestilling
+    activeTagFilter = null; 
     history.pushState({}, '', window.location.pathname); 
     if (resetBtn) resetBtn.classList.add('invisible');
-    renderGlobalTagCloud(); // NY: Tegn skyen på nytt så "active"-klassen fjernes
+    renderGlobalTagCloud(); 
     filterArticles(true);
   }
 
@@ -476,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
       searchQuery = currentInput.toLowerCase();
       
       if (resetBtn) {
-        if (currentInput.length > 0 || activeTagFilter) { // OPPDATERT: Vis reset om enten tekst eller tag er aktiv
+        if (currentInput.length > 0 || activeTagFilter) {
           resetBtn.classList.remove('invisible');
         } else {
           resetBtn.classList.add('invisible');
