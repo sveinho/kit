@@ -141,7 +141,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchWords = searchQuery.split(' ').filter(Boolean);
     const isSearching = searchWords.length > 0;
 
+    // If the search query looks like a tag (exact or partial), activate that tag filter and update the URL
     if (isSearching) {
+      // build unique tag list
+      const uniqueTags = Array.from(new Set(allArticles.flatMap(a => (a.tags || []).map(t => t.trim()))));
+      let matchedTag = null;
+
+      // 1) exact word match first
+      for (const w of searchWords) {
+        const lw = w.toLowerCase();
+        const exact = uniqueTags.find(t => t.toLowerCase() === lw);
+        if (exact) { matchedTag = exact; break; }
+      }
+
+      // 2) then try partial match (tag contains the word)
+      if (!matchedTag) {
+        for (const w of searchWords) {
+          const lw = w.toLowerCase();
+          const partial = uniqueTags.find(t => t.toLowerCase().includes(lw));
+          if (partial) { matchedTag = partial; break; }
+        }
+      }
+
+      if (matchedTag) {
+        // only update state if it's different
+        if (activeTagFilter !== matchedTag) {
+          activeTagFilter = matchedTag;
+          history.pushState({ tag: matchedTag }, '', `?tag=${encodeURIComponent(matchedTag)}`);
+          if (resetBtn) resetBtn.classList.remove('invisible');
+          // refresh global tag UI so active class is applied
+          renderGlobalTagCloud();
+        }
+      }
+
+      // proceed with the existing search/filter logic (the activeTagFilter will cause tag-based filtering too)
       filteredArticles = allArticles.filter(article => {
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
