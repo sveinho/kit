@@ -4,152 +4,72 @@ document.addEventListener('DOMContentLoaded', function() {
   const articlesContainer = document.getElementById('articlesContainer');
   const searchCounter = document.getElementById('searchCounter');
   const noResults = document.getElementById('noResults');
-
+  
   const loadMoreWrapper = document.getElementById('loadMoreWrapper');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
-
-  let allArticles = [];
-  let filteredArticles = [];
+  
+  let allArticles = []; 
+  let filteredArticles = []; 
   let searchQuery = '';
   let activeArticleId = null;
   let activeTrackFilter = 'all';
   let activeTagFilter = null;
 
-  const ITEMS_PER_PAGE = 10;
-  let displayedCount = ITEMS_PER_PAGE;
+  const ITEMS_PER_PAGE = 10; 
+  let displayedCount = ITEMS_PER_PAGE; 
 
-  // FlexSearch index (Document)
-  let flexIndex = null;
-
-  // Helper: create a file-friendly slug from various @id forms
-  function slugifyId(raw) {
-    if (!raw) return '';
-    let s = raw.toString();
-    s = s.replace(/^.*[\/:]/, ''); // last segment after slash or colon
-    s = s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    return s;
-  }
-
-  // Try several registry filenames so the app works regardless of which one exists
+  // Load the canonical registry file: registry.jsonld
   async function loadRegistry() {
-    const candidates = ['registry.jsonld', 'index.jsonld', 'index.json', 'modules.jsonld'];
-    for (const path of candidates) {
-      try {
-        const res = await fetch(path, { cache: 'no-cache' });
-        if (!res.ok) {
-          console.info(`Registry not found at ${path} (status ${res.status})`);
-          continue;
-        }
-        console.info(`Loaded registry from ${path}`);
-        return await res.json();
-      } catch (err) {
-        console.warn(`Error fetching ${path}:`, err);
-        continue;
-      }
-    }
-    throw new Error('Could not load any registry file (tried: registry.jsonld, index.jsonld, index.json, modules.jsonld)');
-  }
-
-  // Build FlexSearch Document index for fast full-text search
-  function buildSearchIndex() {
-    try {
-      if (!window.FlexSearch) {
-        console.warn('FlexSearch not found — search will fall back to substring matching.');
-        flexIndex = null;
-        return;
-      }
-
-      flexIndex = new window.FlexSearch.Document({
-        document: {
-          id: 'id',
-          index: ['title', 'abstract', 'tags', 'content'],
-          store: ['title', 'abstract', 'tags', 'content']
-        },
-        tokenize: 'forward',
-        cache: true,
-        optimize: true
-      });
-
-      allArticles.forEach(a => {
-        flexIndex.add({
-          id: a.id,
-          title: a.title || '',
-          abstract: a.abstract || '',
-          tags: (a.tags || []).join(' '),
-          content: (a.markdownContent || (a.raw && (a.raw.content || a.raw['schema:text'] || a.raw.text)) || '')
-        });
-      });
-      console.info('FlexSearch index built with', allArticles.length, 'documents');
-    } catch (err) {
-      console.warn('Could not build FlexSearch index:', err);
-      flexIndex = null;
-    }
-  }
-
-  // Normalize registry nodes and populate allArticles
-  function normalizeNodes(rawNodes) {
-    allArticles = rawNodes.map(node => {
-      const title = node.title || node.name || node['schema:name'] || '';
-      const abstract = node.abstract || node.description || node['schema:description'] || '';
-      let tags = node.tags || node.keywords || node['schema:keywords'] || [];
-      if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
-      if (tags && !Array.isArray(tags)) tags = [tags];
-      const track = (node.track || node.educationalRole || node['schema:educationalRole'] || node.track || 'all').toString();
-
-      // Determine id: prefer @id or id, normalize to slug for file lookups, but keep raw stored
-      let rawId = node['@id'] || node.id || title || '';
-      const id = slugifyId(rawId);
-
-      // Prefer inline content from registry
-      const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
-
-      return {
-        id,
-        title,
-        abstract,
-        tags,
-        track,
-        discipline: node.discipline || track,
-        order: node.order || null,
-        markdownContent,
-        raw: node
-      };
-    });
+    const url = 'registry.jsonld';
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('Could not load registry.jsonld');
+    return await res.json();
   }
 
   // Initialize the engine, check URL deep-links and tags
   async function loadArticles() {
     try {
+      // Fetch canonical JSON-LD registry
       const data = await loadRegistry();
+
       const raw = Array.isArray(data) ? data : (data['@graph'] || data.items || []);
-      normalizeNodes(raw);
 
-      // Build tag cloud & search index
+      // Normalize nodes into the shape used by the app
+      allArticles = raw.map(node => {
+        const title = node.title || node.name || node['schema:name'] || '';
+        const abstract = node.abstract || node.description || node['schema:description'] || '';
+        let tags = node.tags || node.keywords || node['schema:keywords'] || [];
+        if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
+        if (tags && !Array.isArray(tags)) tags = [tags];
+        const track = (node.track || node.educationalRole || node['schema:educationalRole'] || node.track || 'all').toString();
+        const id = node['@id'] || node.id || (title && title.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+        const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
+
+        return {
+          id,
+          title,
+          abstract,
+          tags,
+          track,
+          discipline: node.discipline || track,
+          order: node.order || null,
+          markdownContent,
+          raw: node
+        };
+      });
+      
+      // Generate the global tag cloud immediately after data is fetched
       renderGlobalTagCloud();
-      buildSearchIndex();
-
+      
       const urlParams = new URLSearchParams(window.location.search);
-      const urlRawId = urlParams.get('id');
+      const urlId = urlParams.get('id');
       const urlTag = urlParams.get('tag');
-
-      if (urlRawId) {
-        const normalized = slugifyId(urlRawId);
-        const matched = allArticles.find(a =>
-          a.id === normalized ||
-          a.id === urlRawId ||
-          (a.raw && (a.raw['@id'] === urlRawId || a.raw.id === urlRawId))
-        );
-        if (matched) {
-          activeArticleId = matched.id;
-          filterArticles(false);
-          triggerDirectLinkFetch(matched.id);
-          return;
-        } else {
-          console.info('No registry node matched id=', urlRawId);
-        }
-      }
-
-      if (urlTag) {
+      
+      if (urlId && allArticles.some(a => a.id === urlId)) {
+        activeArticleId = urlId;
+        filterArticles(false);
+        triggerDirectLinkFetch(urlId);
+      } else if (urlTag) {
         activeTagFilter = decodeURIComponent(urlTag);
         filterArticles(true);
       } else {
@@ -163,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Auto-fetch Markdown for deep-linked modules if needed (only if no inline content)
+  // Auto-fetch Markdown for deep-linked modules if needed
   async function triggerDirectLinkFetch(articleId) {
     const targetArticle = allArticles.find(a => a.id === articleId);
     if (!targetArticle) return;
@@ -178,21 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const mdText = await res.text();
 
       targetArticle.markdownContent = mdText;
-      // If FlexSearch exists, update index entry for this document's content (best-effort)
-      if (flexIndex) {
-        try {
-          flexIndex.add({
-            id: targetArticle.id,
-            title: targetArticle.title || '',
-            abstract: targetArticle.abstract || '',
-            tags: (targetArticle.tags || []).join(' '),
-            content: mdText
-          });
-        } catch (err) {
-          console.warn('Failed to update flex index for', targetArticle.id, err);
-        }
-      }
-
       filterArticles(false);
 
       setTimeout(() => {
@@ -204,15 +109,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  function escapeRegExp(string) { 
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
   }
 
   function getHighlightedHTML(text, words) {
     if (words.length === 0 || !text) return text;
     let html = text;
     words.forEach(word => {
-      const cleanWord = word.replace(/^\./, '');
+      const cleanWord = word.replace(/^\./, ''); 
       const regex = new RegExp(`(${escapeRegExp(cleanWord)})`, 'gi');
       html = html.replace(regex, '<mark>$1</mark>');
     });
@@ -240,26 +145,32 @@ document.addEventListener('DOMContentLoaded', function() {
       const target = expandedEl.querySelector(`#${CSS.escape(anchor)}`);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
+      // CSS.escape might not exist on very old browsers; ignore failures
       console.warn('Could not scroll to hash:', err);
     }
   }
 
-  // Search Engine: use FlexSearch when available, otherwise fallback to substring search
+  // Search Engine: Filters and sorts elements by track order, tags or relevance search
   function filterArticles(isNewQuery = false) {
     if (!articlesContainer) return;
-
+    
     const searchWords = searchQuery.split(' ').filter(Boolean);
     const isSearching = searchWords.length > 0;
 
-    // Tag auto-detection logic (unchanged)
+    // If the search query looks like a tag (exact or partial), activate that tag filter and update the URL
     if (isSearching) {
+      // build unique tag list
       const uniqueTags = Array.from(new Set(allArticles.flatMap(a => (a.tags || []).map(t => t.trim()))));
       let matchedTag = null;
+
+      // 1) exact word match first
       for (const w of searchWords) {
         const lw = w.toLowerCase();
         const exact = uniqueTags.find(t => t.toLowerCase() === lw);
         if (exact) { matchedTag = exact; break; }
       }
+
+      // 2) then try partial match (tag contains the word)
       if (!matchedTag) {
         for (const w of searchWords) {
           const lw = w.toLowerCase();
@@ -267,73 +178,78 @@ document.addEventListener('DOMContentLoaded', function() {
           if (partial) { matchedTag = partial; break; }
         }
       }
-      if (matchedTag && activeTagFilter !== matchedTag) {
-        activeTagFilter = matchedTag;
-        history.pushState({ tag: matchedTag }, '', `?tag=${encodeURIComponent(matchedTag)}`);
-        if (resetBtn) resetBtn.classList.remove('invisible');
-        renderGlobalTagCloud();
-      }
-    }
 
-    // If we have a search query, use the index when available
-    if (isSearching) {
-      let candidateArticles = [...allArticles];
-
-      if (flexIndex) {
-        try {
-          // FlexSearch returns array of result groups (per field); flatten while preserving order
-          const results = flexIndex.search(searchQuery, { enrich: true });
-          const orderedIds = [];
-          for (const group of results) {
-            for (const hit of group.result) {
-              if (!orderedIds.includes(hit)) orderedIds.push(hit);
-            }
-          }
-          candidateArticles = orderedIds.map(id => allArticles.find(a => a.id === id)).filter(Boolean);
-        } catch (err) {
-          console.warn('FlexSearch query failed, falling back to substring search:', err);
-          candidateArticles = [...allArticles];
+      if (matchedTag) {
+        // only update state if it's different
+        if (activeTagFilter !== matchedTag) {
+          activeTagFilter = matchedTag;
+          history.pushState({ tag: matchedTag }, '', `?tag=${encodeURIComponent(matchedTag)}`);
+          if (resetBtn) resetBtn.classList.remove('invisible');
+          // refresh global tag UI so active class is applied
+          renderGlobalTagCloud();
         }
-      } else {
-        // basic substring filter (pre-filter by track/tag too)
-        candidateArticles = allArticles.filter(a => {
-          if (activeTrackFilter !== 'all' && a.track !== activeTrackFilter) return false;
-          if (activeTagFilter && (!a.tags || !a.tags.includes(activeTagFilter))) return false;
-          const combined = `${(a.title||'')} ${(a.abstract||'')} ${(a.tags||[]).join(' ')} ${(a.markdownContent || (a.raw && (a.raw.content || a.raw['schema:text'] || a.raw.text)) || '')}`.toLowerCase();
-          return searchWords.every(word => {
-            const w = word.toLowerCase();
-            if (combined.includes(w)) return true;
-            const cleanW = w.replace(/^\./, '');
-            const cleanCombined = combined.replace(/\./g, '');
-            return combined.includes(cleanW) || cleanCombined.includes(cleanW);
-          });
-        });
       }
 
-      // final track/tag filtering (apply even if flexIndex returned results)
-      filteredArticles = candidateArticles.filter(article => {
+      // proceed with the existing search/filter logic (the activeTagFilter will cause tag-based filtering too)
+      filteredArticles = allArticles.filter(article => {
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
-        return true;
+
+        const titleText = (article.title || '').toLowerCase();
+        const abstractText = (article.abstract || '').toLowerCase();
+        const tagsText = (article.tags || []).join(' ').toLowerCase();
+        const contentText = (article.markdownContent || '').toLowerCase();
+        const combinedSearchText = `${titleText} ${abstractText} ${tagsText} ${contentText}`;
+
+        return searchWords.every(word => {
+          if (combinedSearchText.includes(word)) return true;
+          const cleanWord = word.replace(/^\./, '');
+          const cleanCombined = combinedSearchText.replace(/\./g, '');
+          return combinedSearchText.includes(cleanWord) || cleanCombined.includes(cleanWord);
+        });
       });
 
-      // if no flexIndex, apply title heuristics sorting (preserves previous behavior)
-      if (!flexIndex) {
-        filteredArticles.sort((a, b) => {
-          const titleA = (a.title || '').toLowerCase().trim();
-          const titleB = (b.title || '').toLowerCase().trim();
-          const firstWord = searchWords[0] || '';
-          let scoreA = (titleA === firstWord) ? 3 : (firstWord && titleA.startsWith(firstWord) ? 2 : 1);
-          let scoreB = (titleB === firstWord) ? 3 : (firstWord && titleB.startsWith(firstWord) ? 2 : 1);
-          if (scoreB !== scoreA) return scoreB - scoreA;
+      filteredArticles.sort((a, b) => {
+        const titleA = (a.title || '').toLowerCase().trim();
+        const titleB = (b.title || '').toLowerCase().trim();
+        const firstWord = searchWords[0] || ''; 
+
+        let scoreA = 0;
+        let scoreB = 0;
+
+        if (titleA === firstWord || titleA === firstWord.replace(/^\./, '')) {
+          scoreA = 3;
+        } else if (firstWord && (titleA.startsWith(firstWord) || titleA.startsWith(firstWord.replace(/^\./, '')))) {
+          scoreA = 2;
+        } else {
+          scoreA = 1;
+        }
+
+        if (titleB === firstWord || titleB === firstWord.replace(/^\./, '')) {
+          scoreB = 3;
+        } else if (firstWord && (titleB.startsWith(firstWord) || titleB.startsWith(firstWord.replace(/^\./, '')))) {
+          scoreB = 2;
+        } else {
+          scoreB = 1;
+        }
+
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
+        } else {
           return titleA.localeCompare(titleB);
-        });
-      }
+        }
+      });
     } else {
-      // no search text: apply track/tag filters and default sorting
       filteredArticles = [...allArticles];
-      if (activeTrackFilter !== 'all') filteredArticles = filteredArticles.filter(article => article.track === activeTrackFilter);
-      if (activeTagFilter) filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
+      
+      if (activeTrackFilter !== 'all') {
+        filteredArticles = filteredArticles.filter(article => article.track === activeTrackFilter);
+      }
+      
+      if (activeTagFilter) {
+        filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
+      }
+      
       filteredArticles.sort((a, b) => {
         const trackA = a.track || '';
         const trackB = b.track || '';
@@ -342,7 +258,10 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    if (isNewQuery) displayedCount = ITEMS_PER_PAGE;
+    if (isNewQuery) {
+      displayedCount = ITEMS_PER_PAGE;
+    }
+    
     renderArticles();
   }
 
@@ -363,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     articlesContainer.innerHTML = itemsToRender.map(article => {
       const isExpanded = article.id === activeArticleId;
-
       // Build markdown-it with optional anchor plugin support when rendering expanded content
       let htmlContent = '';
       if (isExpanded) {
@@ -374,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
           md = window.markdownit({ html: true, linkify: true });
         }
 
-        // If anchor plugin is available globally, try to use it
+        // Use markdown-it-anchor plugin if available globally (from a script include)
         try {
           if (md && typeof window.markdownitAnchor === 'function') {
             md.use(window.markdownitAnchor, {
@@ -388,9 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
           console.warn('markdown-it-anchor plugin not applied:', err);
         }
 
-        // Prefer inline registry content, fall back to article.markdownContent
-        const mdSource = article.markdownContent || (article.raw && (article.raw.content || article.raw['schema:text'] || article.raw.text)) || null;
-        htmlContent = mdSource && md ? md.render(mdSource) : (mdSource ? mdSource : 'Loading module text...');
+        htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
       }
 
       const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
@@ -426,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         expandedHTML = ``;
       }
 
-      return `
+     return `
         <article class="filterable" data-id="${article.id}">
           <div class="article-header">
             <h2>${displayTitle}</h2>
@@ -436,6 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <p class="abstract-text">${displayAbstract}</p>
           ${expandedHTML}
+          
           <div class="article-tags-bottom">
             ${tagsHTML}
           </div>
@@ -460,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Async loaders, navigation logic, and clipboard event handling
   function attachArticleClickEvents() {
     articlesContainer.querySelectorAll('.filterable').forEach(articleEl => {
+      
       articleEl.addEventListener('click', async function(e) {
         if (e.target.classList.contains('tag-click-btn')) {
           e.stopPropagation();
@@ -469,8 +387,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (
-          e.target.classList.contains('close-article-btn') ||
-          e.target.classList.contains('share-btn') ||
+          e.target.classList.contains('close-article-btn') || 
+          e.target.classList.contains('share-btn') || 
           e.target.classList.contains('next-step-btn') ||
           e.target.type === 'checkbox'
         ) return;
@@ -491,14 +409,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const shareBtn = articleEl.querySelector('.share-btn');
       if (shareBtn) {
         shareBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
+          e.stopPropagation(); 
           const articleId = this.dataset.id;
           const shareUrl = `${window.location.origin}${window.location.pathname}?id=${articleId}`;
-
+          
           navigator.clipboard.writeText(shareUrl).then(() => {
             this.textContent = 'Link copied! ✔';
             this.classList.add('copied');
-
+            
             setTimeout(() => {
               this.textContent = 'Copy share link 🔗';
               this.classList.remove('copied');
@@ -514,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.addEventListener('click', function(e) {
           e.stopPropagation();
           activeArticleId = null;
-          history.pushState({}, '', window.location.pathname);
+          history.pushState({}, '', window.location.pathname); 
           filterArticles(false);
         });
       }
@@ -550,6 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Central state control for tag selection and URL updates
   function handleTagSelection(tagName) {
     if (activeTagFilter === tagName) {
       activeTagFilter = null;
@@ -559,23 +478,24 @@ document.addEventListener('DOMContentLoaded', function() {
       history.pushState({ tag: tagName }, '', `?tag=${encodeURIComponent(tagName)}`);
       if (resetBtn) resetBtn.classList.remove('invisible');
     }
-
+    
     renderGlobalTagCloud();
     filterArticles(true);
   }
 
+  // Central state controller for processing learning track traversal
   async function handleModuleSelection(articleId) {
     const targetArticle = allArticles.find(a => a.id === articleId);
 
     if (activeArticleId === articleId) {
       activeArticleId = null;
-      history.pushState({}, '', window.location.pathname);
+      history.pushState({}, '', window.location.pathname); 
       filterArticles(false);
       return;
     }
 
     activeArticleId = articleId;
-    history.pushState({id: articleId}, '', `?id=${articleId}`);
+    history.pushState({id: articleId}, '', `?id=${articleId}`); 
     filterArticles(false);
 
     if (targetArticle && !targetArticle.markdownContent) {
@@ -583,21 +503,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const res = await fetch(`articles/${articleId}.md`);
         if (!res.ok) throw new Error('Markdown file not found');
         const mdText = await res.text();
-
+        
         targetArticle.markdownContent = mdText;
-        if (flexIndex) {
-          try {
-            flexIndex.add({
-              id: targetArticle.id,
-              title: targetArticle.title || '',
-              abstract: targetArticle.abstract || '',
-              tags: (targetArticle.tags || []).join(' '),
-              content: mdText
-            });
-          } catch (err) {
-            console.warn('Failed to update flex index for', targetArticle.id, err);
-          }
-        }
         filterArticles(false);
       } catch (err) {
         console.error("Could not load markdown details:", err);
@@ -611,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newRenderedEl) newRenderedEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // Internal anchor handler
+  // Delegated click handler for internal anchor links inside rendered markdown
   let _anchorHandlerInstalled = false;
   function installInternalAnchorHandler() {
     if (_anchorHandlerInstalled || !articlesContainer) return;
@@ -621,14 +528,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!a) return;
       const href = a.getAttribute('href') || '';
 
+      // Handle fragment-only links like "#section"
       if (href.startsWith('#')) {
         e.preventDefault();
         const anchor = href.slice(1);
+        // find the article containing this link (or use the active one)
         const articleEl = a.closest('.filterable') || articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
         if (!articleEl) return;
         const target = articleEl.querySelector(`#${CSS.escape(anchor)}`);
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // update URL to include module id and hash
           history.pushState({}, '', `${window.location.pathname}?id=${articleEl.dataset.id}#${anchor}`);
         }
       }
@@ -640,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateSearchUI(count, isSearching) {
     if (searchCounter) {
       const filterNotice = activeTagFilter ? ` filtered by #${activeTagFilter}` : '';
-      searchCounter.textContent = isSearching
+      searchCounter.textContent = isSearching 
         ? `Found ${count} matching steps sorted by relevance${filterNotice}`
         : `Track index loaded. Total modules available: ${count}${filterNotice}`;
     }
@@ -648,13 +558,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function resetEntireRegistry() {
-    if (searchInput) searchInput.value = '';
-    searchQuery = '';
+    if (searchInput) searchInput.value = ''; 
+    searchQuery = ''; 
     activeArticleId = null;
-    activeTagFilter = null;
-    history.pushState({}, '', window.location.pathname);
+    activeTagFilter = null; 
+    history.pushState({}, '', window.location.pathname); 
     if (resetBtn) resetBtn.classList.add('invisible');
-    renderGlobalTagCloud();
+    renderGlobalTagCloud(); 
     filterArticles(true);
   }
 
@@ -669,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('input', debounce(function(e) {
       const currentInput = e.target.value.trim();
       searchQuery = currentInput.toLowerCase();
-
+      
       if (resetBtn) {
         if (currentInput.length > 0 || activeTagFilter) {
           resetBtn.classList.remove('invisible');
@@ -685,17 +595,20 @@ document.addEventListener('DOMContentLoaded', function() {
     resetBtn.addEventListener('click', resetEntireRegistry);
   }
 
+  // Role Selection Button Controller
   const filterButtons = document.querySelectorAll('.filter-btn');
   filterButtons.forEach(btn => {
     btn.addEventListener('click', function() {
       filterButtons.forEach(b => b.classList.remove('active'));
       this.classList.add('active');
-
+      
       activeTrackFilter = this.dataset.track;
       filterArticles(true);
     });
   });
 
+  // Install internal anchor handler once
   installInternalAnchorHandler();
+
   loadArticles();
 });
