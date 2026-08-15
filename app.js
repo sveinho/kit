@@ -18,94 +18,58 @@ document.addEventListener('DOMContentLoaded', function() {
   const ITEMS_PER_PAGE = 10; 
   let displayedCount = ITEMS_PER_PAGE; 
 
-  // Load the canonical registry file: registry.jsonld
-  async function loadRegistry() {
-    const url = 'registry.jsonld';
-    const res = await fetch(url, { cache: 'no-cache' });
-    if (!res.ok) throw new Error('Could not load registry.jsonld');
-    return await res.json();
-  }
-
   // Initialize the engine, check URL deep-links and tags
   async function loadArticles() {
     try {
-      // Fetch canonical JSON-LD registry
-      const data = await loadRegistry();
-
-      const raw = Array.isArray(data) ? data : (data['@graph'] || data.items || []);
-
-      // Normalize nodes into the shape used by the app
-      allArticles = raw.map(node => {
-        const title = node.title || node.name || node['schema:name'] || '';
-        const abstract = node.abstract || node.description || node['schema:description'] || '';
-        let tags = node.tags || node.keywords || node['schema:keywords'] || [];
-        if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
-        if (tags && !Array.isArray(tags)) tags = [tags];
-        const track = (node.track || node.educationalRole || node['schema:educationalRole'] || node.track || 'all').toString();
-        const id = node['@id'] || node.id || (title && title.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-        const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
-
-        return {
-          id,
-          title,
-          abstract,
-          tags,
-          track,
-          discipline: node.discipline || track,
-          order: node.order || null,
-          markdownContent,
-          raw: node
-        };
-      });
+      const response = await fetch('index.json');
+      if (!response.ok) throw new Error('Failed to load JSON registry data');
+      allArticles = await response.json();
       
-      // Generate the global tag cloud immediately after data is fetched
+      // NY: Generer den globale tag-skyen med en gang dataene er hentet
       renderGlobalTagCloud();
       
       const urlParams = new URLSearchParams(window.location.search);
       const urlId = urlParams.get('id');
-      const urlTag = urlParams.get('tag');
+      const urlTag = urlParams.get('tag'); // NY: Sjekker om URL-en har f.eks. ?tag=guide
       
       if (urlId && allArticles.some(a => a.id === urlId)) {
         activeArticleId = urlId;
-        filterArticles(false);
-        triggerDirectLinkFetch(urlId);
+        filterArticles(false); 
+        triggerDirectLinkFetch(urlId); 
       } else if (urlTag) {
+        // NY: Hvis det finnes en tag i URL-en, aktiverer vi filteret med en gang
         activeTagFilter = decodeURIComponent(urlTag);
         filterArticles(true);
       } else {
-        filterArticles(true);
+        filterArticles(true); 
       }
     } catch (error) {
       console.error(error);
       if (articlesContainer) {
-        articlesContainer.innerHTML = '<p style="color: red;">Could not fetch registry. Please verify running via local development server.</p>';
+        articlesContainer.innerHTML = '<p style="color: red;">Could not fetch index. Please verify running via local development server.</p>';
       }
     }
   }
 
-  // Auto-fetch Markdown for deep-linked modules if needed
+  // Auto-fetch Markdown for deep-linked modules
   async function triggerDirectLinkFetch(articleId) {
     const targetArticle = allArticles.find(a => a.id === articleId);
-    if (!targetArticle) return;
-    if (targetArticle.markdownContent) {
-      filterArticles(false);
-      return;
-    }
-
-    try {
-      const res = await fetch(`articles/${articleId}.md`);
-      if (!res.ok) throw new Error('Markdown file not found');
-      const mdText = await res.text();
-
-      targetArticle.markdownContent = mdText;
-      filterArticles(false);
-
-      setTimeout(() => {
-        const el = articlesContainer.querySelector(`[data-id="${articleId}"]`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    } catch (err) {
-      console.error('Could not load direct link markdown:', err);
+    if (targetArticle && !targetArticle.markdownContent) {
+      try {
+        const res = await fetch(`articles/${articleId}.md`);
+        if (!res.ok) throw new Error('Markdown file not found');
+        const mdText = await res.text();
+        
+        targetArticle.markdownContent = mdText;
+        filterArticles(false);
+        
+        setTimeout(() => {
+          const el = articlesContainer.querySelector(`[data-id="${articleId}"]`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      } catch (err) {
+        console.error("Could not load direct link markdown:", err);
+      }
     }
   }
 
@@ -134,22 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
-  // Helper: scroll to hash inside expanded module (used for anchor deep-links)
-  function scrollToHashInExpanded() {
-    try {
-      const hash = window.location.hash;
-      if (!hash || !activeArticleId) return;
-      const anchor = hash.startsWith('#') ? hash.slice(1) : hash;
-      const expandedEl = articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
-      if (!expandedEl) return;
-      const target = expandedEl.querySelector(`#${CSS.escape(anchor)}`);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (err) {
-      // CSS.escape might not exist on very old browsers; ignore failures
-      console.warn('Could not scroll to hash:', err);
-    }
-  }
-
   // Search Engine: Filters and sorts elements by track order, tags or relevance search
   function filterArticles(isNewQuery = false) {
     if (!articlesContainer) return;
@@ -157,49 +105,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchWords = searchQuery.split(' ').filter(Boolean);
     const isSearching = searchWords.length > 0;
 
-    // If the search query looks like a tag (exact or partial), activate that tag filter and update the URL
     if (isSearching) {
-      // build unique tag list
-      const uniqueTags = Array.from(new Set(allArticles.flatMap(a => (a.tags || []).map(t => t.trim()))));
-      let matchedTag = null;
-
-      // 1) exact word match first
-      for (const w of searchWords) {
-        const lw = w.toLowerCase();
-        const exact = uniqueTags.find(t => t.toLowerCase() === lw);
-        if (exact) { matchedTag = exact; break; }
-      }
-
-      // 2) then try partial match (tag contains the word)
-      if (!matchedTag) {
-        for (const w of searchWords) {
-          const lw = w.toLowerCase();
-          const partial = uniqueTags.find(t => t.toLowerCase().includes(lw));
-          if (partial) { matchedTag = partial; break; }
-        }
-      }
-
-      if (matchedTag) {
-        // only update state if it's different
-        if (activeTagFilter !== matchedTag) {
-          activeTagFilter = matchedTag;
-          history.pushState({ tag: matchedTag }, '', `?tag=${encodeURIComponent(matchedTag)}`);
-          if (resetBtn) resetBtn.classList.remove('invisible');
-          // refresh global tag UI so active class is applied
-          renderGlobalTagCloud();
-        }
-      }
-
-      // proceed with the existing search/filter logic (the activeTagFilter will cause tag-based filtering too)
+      // Filter by search + optional track/tag
       filteredArticles = allArticles.filter(article => {
+        // 1. Filtrer på Track hvis aktivert
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
+
+        // 2. NY: Filtrer på aktiv Tag hvis en tag er trykket på
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
 
+        // 3. Fritekstsøk i tittel, abstract og i selve taggene til artikkelen
         const titleText = (article.title || '').toLowerCase();
         const abstractText = (article.abstract || '').toLowerCase();
-        const tagsText = (article.tags || []).join(' ').toLowerCase();
-        const contentText = (article.markdownContent || '').toLowerCase();
-        const combinedSearchText = `${titleText} ${abstractText} ${tagsText} ${contentText}`;
+        const tagsText = (article.tags || []).join(' ').toLowerCase(); // NY: Gjør taggene søkbare i tekstfeltet
+        const combinedSearchText = `${titleText} ${abstractText} ${tagsText}`;
 
         return searchWords.every(word => {
           if (combinedSearchText.includes(word)) return true;
@@ -209,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
 
+      // Sortering basert på relevans
       filteredArticles.sort((a, b) => {
         const titleA = (a.title || '').toLowerCase().trim();
         const titleB = (b.title || '').toLowerCase().trim();
@@ -240,16 +160,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     } else {
+      // Default state when not searching: Filter by active track or active tag if chosen
       filteredArticles = [...allArticles];
       
       if (activeTrackFilter !== 'all') {
         filteredArticles = filteredArticles.filter(article => article.track === activeTrackFilter);
       }
       
+      // NY: Hvis et tag-filter er aktivt utenom fritekstsøk, må vi filtrere listen her også
       if (activeTagFilter) {
         filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
       }
       
+      // Sort by Track group first, then by the structured order sequence
       filteredArticles.sort((a, b) => {
         const trackA = a.track || '';
         const trackB = b.track || '';
@@ -282,46 +205,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     articlesContainer.innerHTML = itemsToRender.map(article => {
       const isExpanded = article.id === activeArticleId;
-      // Build markdown-it with optional anchor plugin support when rendering expanded content
-      let htmlContent = '';
+      const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
+      
+      // Plassert korrekt for bruk i HTML-genereringen senere
+      const displayAbstract = isSearching ? getHighlightedHTML(article.abstract || '', searchWords) : (article.abstract || '');
+      
+            const disciplineValue = article.discipline || 'Unknown';
+      const tagsArray = article.tags || [];
+
+      // OPPDATERT: Sjekker om brukeren søker, og uthever søketreff inni selve tag-knappen
+      const tagsHTML = tagsArray.map(tag => {
+        const isActive = tag === activeTagFilter ? 'active' : '';
+        
+        // Hvis brukeren søker, kjører vi tag-teksten gjennom din eksisterende highlighter
+        const displayTagText = isSearching 
+          ? getHighlightedHTML(tag, searchWords) 
+          : tag;
+          
+        return `<button class="badge status-${tag.toLowerCase().trim()} tag-click-btn ${isActive}" data-tag="${tag}">#${displayTagText}</button>`;
+      }).join(' ');
+
+      let expandedHTML = '';
       if (isExpanded) {
+        // Robust initialization using your downloaded local script build
         let md = null;
         if (typeof window.markdownit === 'function') {
           md = new window.markdownit({ html: true, linkify: true });
         } else if (window.markdownit) {
           md = window.markdownit({ html: true, linkify: true });
         }
+        
+        let htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
 
-        // Use markdown-it-anchor plugin if available globally (from a script include)
-        try {
-          if (md && typeof window.markdownitAnchor === 'function') {
-            md.use(window.markdownitAnchor, {
-              permalink: true,
-              permalinkBefore: false,
-              permalinkClass: 'anchor',
-              permalinkSymbol: '#'
-            });
-          }
-        } catch (err) {
-          console.warn('markdown-it-anchor plugin not applied:', err);
-        }
-
-        htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
-      }
-
-      const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
-      const displayAbstract = isSearching ? getHighlightedHTML(article.abstract || '', searchWords) : (article.abstract || '');
-      const disciplineValue = article.discipline || (article.track || 'Unknown');
-      const tagsArray = article.tags || [];
-
-      const tagsHTML = tagsArray.map(tag => {
-        const isActive = tag === activeTagFilter ? 'active' : '';
-        const displayTagText = isSearching ? getHighlightedHTML(tag, searchWords) : tag;
-        return `<button class="badge status-${tag.toLowerCase().trim()} tag-click-btn ${isActive}" data-tag="${tag}">#${displayTagText}</button>`;
-      }).join(' ');
-
-      let expandedHTML = '';
-      if (isExpanded) {
+        // SIKRET: Disse ligger nå trygt plassert inne i if (isExpanded) blokken
         const nextArticle = allArticles.find(a => a.track === article.track && a.order === (article.order + 1));
         let nextBtnHTML = '';
         if (nextArticle) {
@@ -342,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
         expandedHTML = ``;
       }
 
+
      return `
         <article class="filterable" data-id="${article.id}">
           <div class="article-header">
@@ -360,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }).join('');
 
+    // REPARERT: Denne linjen manglet, som gjorde at klikk-lytterne aldri ble aktivert på nytt!
     attachArticleClickEvents();
 
     if (loadMoreWrapper) {
@@ -369,9 +287,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMoreWrapper.classList.add('hidden');
       }
     }
-
-    // After rendering, if an expanded module exists and the URL has a hash, scroll to the anchor
-    scrollToHashInExpanded();
   }
 
   // Async loaders, navigation logic, and clipboard event handling
@@ -379,6 +294,8 @@ document.addEventListener('DOMContentLoaded', function() {
     articlesContainer.querySelectorAll('.filterable').forEach(articleEl => {
       
       articleEl.addEventListener('click', async function(e) {
+        // SIKRET: Hvis brukeren trykker på en tag-knapp i artikkelkortet, 
+        // skal vi trigge tag-filtrering i stedet for å åpne modulen.
         if (e.target.classList.contains('tag-click-btn')) {
           e.stopPropagation();
           const selectedTag = e.target.dataset.tag;
@@ -393,10 +310,13 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target.type === 'checkbox'
         ) return;
 
+        // SIKRET: Bruker 'this.dataset.id' (selve kortet) i stedet for 'e.target' 
+        // slik at klikk på gule <mark>-ord eller badges alltid åpner riktig modul
         const articleId = this.dataset.id;
         handleModuleSelection(articleId);
       });
 
+      // Next step navigation engine
       const nextBtn = articleEl.querySelector('.next-step-btn');
       if (nextBtn) {
         nextBtn.addEventListener('click', function(e) {
@@ -439,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Generate a global tag cloud based on available data
+  // NY: Genererer en global tag-sky øverst basert på tilgjengelig data
   function renderGlobalTagCloud() {
     const cloudContainer = document.getElementById('globalTagCloud');
     if (!cloudContainer) return;
@@ -461,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return `<button class="global-tag-btn ${isActive}" data-tag="${tag}">#${tag}</button>`;
     }).join(' ');
 
+    // Legg til klikklyttere på de globale tag-knappene
     cloudContainer.querySelectorAll('.global-tag-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         handleTagSelection(this.dataset.tag);
@@ -468,9 +389,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Central state control for tag selection and URL updates
+  // NY: Sentral tilstandskontroll for valg/fjerning av tag-filter og URL-pushing
   function handleTagSelection(tagName) {
     if (activeTagFilter === tagName) {
+      // Hvis brukeren trykker på en allerede aktiv tag, skrur vi den av
       activeTagFilter = null;
       history.pushState({}, '', window.location.pathname);
     } else {
@@ -479,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (resetBtn) resetBtn.classList.remove('invisible');
     }
     
+    // Oppdater både den globale tag-skyen og selve artikkellisten
     renderGlobalTagCloud();
     filterArticles(true);
   }
@@ -518,37 +441,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newRenderedEl) newRenderedEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // Delegated click handler for internal anchor links inside rendered markdown
-  let _anchorHandlerInstalled = false;
-  function installInternalAnchorHandler() {
-    if (_anchorHandlerInstalled || !articlesContainer) return;
-
-    articlesContainer.addEventListener('click', function(e) {
-      const a = e.target.closest('a');
-      if (!a) return;
-      const href = a.getAttribute('href') || '';
-
-      // Handle fragment-only links like "#section"
-      if (href.startsWith('#')) {
-        e.preventDefault();
-        const anchor = href.slice(1);
-        // find the article containing this link (or use the active one)
-        const articleEl = a.closest('.filterable') || articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
-        if (!articleEl) return;
-        const target = articleEl.querySelector(`#${CSS.escape(anchor)}`);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          // update URL to include module id and hash
-          history.pushState({}, '', `${window.location.pathname}?id=${articleEl.dataset.id}#${anchor}`);
-        }
-      }
-    }, false);
-
-    _anchorHandlerInstalled = true;
-  }
-
   function updateSearchUI(count, isSearching) {
     if (searchCounter) {
+      // OPPDATERT: Tar høyde for om et tag-filter kjører i bakgrunnen
       const filterNotice = activeTagFilter ? ` filtered by #${activeTagFilter}` : '';
       searchCounter.textContent = isSearching 
         ? `Found ${count} matching steps sorted by relevance${filterNotice}`
@@ -561,10 +456,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) searchInput.value = ''; 
     searchQuery = ''; 
     activeArticleId = null;
-    activeTagFilter = null; 
+    activeTagFilter = null; // NY: Tømmer tag-filteret ved fullstendig tilbakestilling
     history.pushState({}, '', window.location.pathname); 
     if (resetBtn) resetBtn.classList.add('invisible');
-    renderGlobalTagCloud(); 
+    renderGlobalTagCloud(); // NY: Tegn skyen på nytt så "active"-klassen fjernes
     filterArticles(true);
   }
 
@@ -581,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
       searchQuery = currentInput.toLowerCase();
       
       if (resetBtn) {
-        if (currentInput.length > 0 || activeTagFilter) {
+        if (currentInput.length > 0 || activeTagFilter) { // OPPDATERT: Vis reset om enten tekst eller tag er aktiv
           resetBtn.classList.remove('invisible');
         } else {
           resetBtn.classList.add('invisible');
@@ -606,9 +501,6 @@ document.addEventListener('DOMContentLoaded', function() {
       filterArticles(true);
     });
   });
-
-  // Install internal anchor handler once
-  installInternalAnchorHandler();
 
   loadArticles();
 });
