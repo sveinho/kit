@@ -134,6 +134,22 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 
+  // Helper: scroll to hash inside expanded module (used for anchor deep-links)
+  function scrollToHashInExpanded() {
+    try {
+      const hash = window.location.hash;
+      if (!hash || !activeArticleId) return;
+      const anchor = hash.startsWith('#') ? hash.slice(1) : hash;
+      const expandedEl = articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
+      if (!expandedEl) return;
+      const target = expandedEl.querySelector(`#${CSS.escape(anchor)}`);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      // CSS.escape might not exist on very old browsers; ignore failures
+      console.warn('Could not scroll to hash:', err);
+    }
+  }
+
   // Search Engine: Filters and sorts elements by track order, tags or relevance search
   function filterArticles(isNewQuery = false) {
     if (!articlesContainer) return;
@@ -266,10 +282,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     articlesContainer.innerHTML = itemsToRender.map(article => {
       const isExpanded = article.id === activeArticleId;
+      // Build markdown-it with optional anchor plugin support when rendering expanded content
+      let htmlContent = '';
+      if (isExpanded) {
+        let md = null;
+        if (typeof window.markdownit === 'function') {
+          md = new window.markdownit({ html: true, linkify: true });
+        } else if (window.markdownit) {
+          md = window.markdownit({ html: true, linkify: true });
+        }
+
+        // Use markdown-it-anchor plugin if available globally (from a script include)
+        try {
+          if (md && typeof window.markdownitAnchor === 'function') {
+            md.use(window.markdownitAnchor, {
+              permalink: true,
+              permalinkBefore: false,
+              permalinkClass: 'anchor',
+              permalinkSymbol: '#'
+            });
+          }
+        } catch (err) {
+          console.warn('markdown-it-anchor plugin not applied:', err);
+        }
+
+        htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
+      }
+
       const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
-      
       const displayAbstract = isSearching ? getHighlightedHTML(article.abstract || '', searchWords) : (article.abstract || '');
-      
       const disciplineValue = article.discipline || (article.track || 'Unknown');
       const tagsArray = article.tags || [];
 
@@ -281,15 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       let expandedHTML = '';
       if (isExpanded) {
-        let md = null;
-        if (typeof window.markdownit === 'function') {
-          md = new window.markdownit({ html: true, linkify: true });
-        } else if (window.markdownit) {
-          md = window.markdownit({ html: true, linkify: true });
-        }
-        
-        let htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
-
         const nextArticle = allArticles.find(a => a.track === article.track && a.order === (article.order + 1));
         let nextBtnHTML = '';
         if (nextArticle) {
@@ -337,6 +369,9 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMoreWrapper.classList.add('hidden');
       }
     }
+
+    // After rendering, if an expanded module exists and the URL has a hash, scroll to the anchor
+    scrollToHashInExpanded();
   }
 
   // Async loaders, navigation logic, and clipboard event handling
@@ -483,6 +518,35 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newRenderedEl) newRenderedEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // Delegated click handler for internal anchor links inside rendered markdown
+  let _anchorHandlerInstalled = false;
+  function installInternalAnchorHandler() {
+    if (_anchorHandlerInstalled || !articlesContainer) return;
+
+    articlesContainer.addEventListener('click', function(e) {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+
+      // Handle fragment-only links like "#section"
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        const anchor = href.slice(1);
+        // find the article containing this link (or use the active one)
+        const articleEl = a.closest('.filterable') || articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
+        if (!articleEl) return;
+        const target = articleEl.querySelector(`#${CSS.escape(anchor)}`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // update URL to include module id and hash
+          history.pushState({}, '', `${window.location.pathname}?id=${articleEl.dataset.id}#${anchor}`);
+        }
+      }
+    }, false);
+
+    _anchorHandlerInstalled = true;
+  }
+
   function updateSearchUI(count, isSearching) {
     if (searchCounter) {
       const filterNotice = activeTagFilter ? ` filtered by #${activeTagFilter}` : '';
@@ -542,6 +606,9 @@ document.addEventListener('DOMContentLoaded', function() {
       filterArticles(true);
     });
   });
+
+  // Install internal anchor handler once
+  installInternalAnchorHandler();
 
   loadArticles();
 });
