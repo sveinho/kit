@@ -18,38 +18,51 @@ document.addEventListener('DOMContentLoaded', function() {
   const ITEMS_PER_PAGE = 10; 
   let displayedCount = ITEMS_PER_PAGE; 
 
+  // Try multiple registry filenames: modules.jsonld, index.jsonld, index.json
+  async function loadRegistry() {
+    const candidates = ['modules.jsonld', 'index.jsonld', 'index.json'];
+    for (const url of candidates) {
+      try {
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (!res.ok) throw new Error('not found');
+        const data = await res.json();
+        console.info('Loaded registry from', url);
+        return data;
+      } catch (err) {
+        // try next
+      }
+    }
+    throw new Error('Could not fetch any registry file (modules.jsonld, index.jsonld, index.json)');
+  }
+
   // Initialize the engine, check URL deep-links and tags
   async function loadArticles() {
     try {
-      // Fetch JSON-LD registry (modules.jsonld). Support both an array root or @graph.
-      const response = await fetch('modules.jsonld');
-      if (!response.ok) throw new Error('Failed to load JSON-LD registry data');
-      const data = await response.json();
+      // Fetch JSON-LD registry with fallback to index.jsonld/index.json
+      const data = await loadRegistry();
 
       const raw = Array.isArray(data) ? data : (data['@graph'] || data.items || []);
 
-      // Normalize JSON-LD nodes into the shape used by the app
+      // Normalize nodes into the shape used by the app
       allArticles = raw.map(node => {
         const title = node.title || node.name || node['schema:name'] || '';
         const abstract = node.abstract || node.description || node['schema:description'] || '';
         let tags = node.tags || node.keywords || node['schema:keywords'] || [];
         if (typeof tags === 'string') tags = tags.split(',').map(t => t.trim()).filter(Boolean);
         if (tags && !Array.isArray(tags)) tags = [tags];
-        const track = (node.track || node.educationalRole || node['schema:educationalRole'] || 'all').toString();
+        const track = (node.track || node.educationalRole || node['schema:educationalRole'] || node.track || 'all').toString();
         const id = node['@id'] || node.id || (title && title.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-        // If JSON-LD contains inline content, use it as markdownContent so the UI can render without fetching external .md
         const markdownContent = node.content || node.text || node['schema:text'] || node.markdownContent || null;
 
-        // Preserve any original fields for compatibility
         return {
           id,
           title,
           abstract,
           tags,
           track,
-          discipline: track, // keep discipline for existing templates that expect it
+          discipline: node.discipline || track,
+          order: node.order || null,
           markdownContent,
-          // keep raw node for debugging or future use
           raw: node
         };
       });
@@ -59,12 +72,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const urlParams = new URLSearchParams(window.location.search);
       const urlId = urlParams.get('id');
-      const urlTag = urlParams.get('tag'); // checks for ?tag=guide
+      const urlTag = urlParams.get('tag');
       
       if (urlId && allArticles.some(a => a.id === urlId)) {
         activeArticleId = urlId;
         filterArticles(false);
-        // If the article has no inline markdownContent, attempt to fetch the external .md file
         triggerDirectLinkFetch(urlId);
       } else if (urlTag) {
         activeTagFilter = decodeURIComponent(urlTag);
@@ -85,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const targetArticle = allArticles.find(a => a.id === articleId);
     if (!targetArticle) return;
     if (targetArticle.markdownContent) {
-      // already have inline content from JSON-LD, nothing to fetch
       filterArticles(false);
       return;
     }
@@ -140,15 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const isSearching = searchWords.length > 0;
 
     if (isSearching) {
-      // Filter by search + optional track/tag
       filteredArticles = allArticles.filter(article => {
-        // 1. Filter on Track if activated
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
-
-        // 2. Filter on active Tag if set
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
 
-        // 3. Full-text search in title, abstract and tags
         const titleText = (article.title || '').toLowerCase();
         const abstractText = (article.abstract || '').toLowerCase();
         const tagsText = (article.tags || []).join(' ').toLowerCase();
@@ -163,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
 
-      // Relevance sorting
       filteredArticles.sort((a, b) => {
         const titleA = (a.title || '').toLowerCase().trim();
         const titleB = (b.title || '').toLowerCase().trim();
@@ -195,7 +200,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     } else {
-      // Default state when not searching: Filter by active track or active tag if chosen
       filteredArticles = [...allArticles];
       
       if (activeTrackFilter !== 'all') {
@@ -206,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
       }
       
-      // Sort by Track group first, then by order
       filteredArticles.sort((a, b) => {
         const trackA = a.track || '';
         const trackB = b.track || '';
