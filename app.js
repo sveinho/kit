@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const ITEMS_PER_PAGE = 10; 
   let displayedCount = ITEMS_PER_PAGE; 
 
+  // helper: normalize various forms of ids into a file-friendly slug
+  function slugifyId(raw) {
+    if (!raw) return '';
+    let s = raw.toString();
+    // if it's an IRI or contains namespace separators, take last segment
+    s = s.replace(/^.*[\/:]/, '');
+    // lower, replace non-alnum with hyphens, trim hyphens
+    s = s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return s;
+  }
+
   // Load the canonical registry file: registry.jsonld
   async function loadRegistry() {
     const url = 'registry.jsonld';
@@ -71,14 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
       renderGlobalTagCloud();
       
       const urlParams = new URLSearchParams(window.location.search);
-      const urlId = urlParams.get('id');
+      const urlRawId = urlParams.get('id');
       const urlTag = urlParams.get('tag');
-      
-      if (urlId && allArticles.some(a => a.id === urlId)) {
-        activeArticleId = urlId;
-        filterArticles(false);
-        triggerDirectLinkFetch(urlId);
-      } else if (urlTag) {
+
+      if (urlRawId) {
+        // normalize the incoming id so we accept both "module:getting-started" and "getting-started"
+        const normalized = slugifyId(urlRawId);
+        const matched = allArticles.find(a => a.id === normalized || a.id === urlRawId || (a.raw && (a.raw['@id'] === urlRawId || a.raw.id === urlRawId)));
+        if (matched) {
+          activeArticleId = matched.id;
+          filterArticles(false);
+          triggerDirectLinkFetch(matched.id);
+          return;
+        }
+      }
+
+      if (urlTag) {
         activeTagFilter = decodeURIComponent(urlTag);
         filterArticles(true);
       } else {
