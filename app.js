@@ -18,27 +18,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const ITEMS_PER_PAGE = 10; 
   let displayedCount = ITEMS_PER_PAGE; 
 
-  // Try multiple registry filenames: modules.jsonld, index.jsonld, index.json
+  // Load the canonical registry file: registry.jsonld
   async function loadRegistry() {
-    const candidates = ['modules.jsonld', 'index.jsonld', 'index.json'];
-    for (const url of candidates) {
-      try {
-        const res = await fetch(url, { cache: 'no-cache' });
-        if (!res.ok) throw new Error('not found');
-        const data = await res.json();
-        console.info('Loaded registry from', url);
-        return data;
-      } catch (err) {
-        // try next
-      }
-    }
-    throw new Error('Could not fetch any registry file (modules.jsonld, index.jsonld, index.json)');
+    const url = 'registry.jsonld';
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('Could not load registry.jsonld');
+    return await res.json();
   }
 
   // Initialize the engine, check URL deep-links and tags
   async function loadArticles() {
     try {
-      // Fetch JSON-LD registry with fallback to index.jsonld/index.json
+      // Fetch canonical JSON-LD registry
       const data = await loadRegistry();
 
       const raw = Array.isArray(data) ? data : (data['@graph'] || data.items || []);
