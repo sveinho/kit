@@ -353,7 +353,6 @@ article.filterable:hover .read-more-btn {
   border-top: 1px solid var(--border-color);
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .next-step-btn {
