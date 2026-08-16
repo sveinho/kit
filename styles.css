@@ -461,7 +461,7 @@ article.filterable:hover .read-more-btn {
   margin-bottom: 6px;
 }
 
-/* Markdown Task Lists Rules */
+/* Markdown Task Lists Rules - SIKRET: Fungerer perfekt med ny klikklogikk */
 .markdown-body ul:has(input[type="checkbox"]) {
   list-style-type: none;
   padding-left: 4px;
@@ -505,12 +505,96 @@ article.filterable:hover .read-more-btn {
   padding: 2px 6px;
   border-radius: 4px;
 }
-.markdown-body pre code {background-color: transparent;color: inherit;padding: 0;font-size: inherit;}
-/* ==========================================================================7. FOOTER & FEEDBACK BOXES========================================================================== */
 
-.feedback-box {background-color: #ffffff;border: 1px solid var(--border-color);border-radius: 8px;padding: 40px;text-align: center;margin-top: 20px;}.feedback-box h3 {margin-bottom: 8px;color: var(--text-main);}.main-footer {text-align: center;padding: 30px 20px;color: var(--text-muted);font-size: 0.85rem;border-top: 1px solid var(--border-color);margin-top: 60px;}@keyframes fadeIn {from { opacity: 0; transform: translateY(4px); }to { opacity: 1; transform: translateY(0); }}
-/* ==========================================================================8. ROLE FILTER BUTTONS========================================================================== */
-.filter-buttons-wrapper {display: flex;gap: 10px;margin-top: 15px;flex-wrap: wrap;}.filter-btn {background-color: #ffffff;color: var(--text-main);border: 1px solid var(--border-color);padding: 8px 16px;border-radius: 20px;font-size: 0.9rem;font-weight: 500;cursor: pointer;transition: all 0.2s ease;}.filter-btn:hover {background-color: #edf2f7;transform: translateY(-1px);}.filter-btn.active {background-color: #2d3748;color: #ffffff;border-color: #2d3748;box-shadow: 0 2px 4px rgba(0,0,0,0.1);}/* ==========================================================================9. DIMMING INACTIVE MODULES (FADE OUT EFFECT)========================================================================== *//* 1. Detect if the grid contains an expanded module /.modules-grid:has(article.filterable .full-content) article.filterable {opacity: 0.4;filter: grayscale(80%);transform: scale(0.98);border-left-color: #cbd5e0 !important; / Tvinger en nøytral grå ramme på de inaktive */transition: all 0.3s ease;}/* 2. Keep the active/expanded module at full visibility and color */.modules-grid article.filterable:has(.full-content) {opacity: 1 !important;filter: grayscale(0%) !important;transform: scale(1) !important;box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);}/* 3. Restore fallback border colors specifically for active items /.modules-grid article.filterable:has(.full-content)[data-id="-researchers"] { border-left-color: var(--bg-researcher-badge) !important; }.modules-grid article.filterable:has(.full-content)[data-id*="-managers"] { border-left-color: var(--bg-manager-badge) !important; }.modules-grid article.filterable:has(.full-content)[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge) !important; }
+.markdown-body pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ==========================================================================
+   7. FOOTER & FEEDBACK BOXES
+   ========================================================================== */
+.feedback-box {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.feedback-box h3 {
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.main-footer {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 60px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   8. ROLE FILTER BUTTONS (Stil for selve knappene)
+   ========================================================================== */
+.filter-btn {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: #edf2f7;
+  transform: translateY(-1px);
+}
+
+.filter-btn.active {
+  background-color: #2d3748;
+  color: #ffffff;
+  border-color: #2d3748;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ==========================================================================
+   9. DIMMING INACTIVE MODULES (FADE OUT EFFECT)
+   ========================================================================== */
+/* 1. Slå på dimming av alle kort når ett kort er utvidet */
+.modules-grid:has(article.filterable .full-content) article.filterable {
+  opacity: 0.4;
+  filter: grayscale(80%);
+  transform: scale(0.98);
+  border-left-color: #cbd5e0 !important; /* Tvinger en nøytral grå ramme på de inaktive */
+  transition: all 0.3s ease;
+}
+
+/* 2. Hold det aktive/utvidede kortet fullt synlig */
+.modules-grid article.filterable:has(.full-content) {
+  opacity: 1 !important;
+  filter: grayscale(0%) !important;
+  transform: scale(1) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* 3. Gjenopprett de unike temafargene på rammen kun for det aktive kortet */
+.modules-grid article.filterable:has(.full-content)[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge) !important; }
+.modules-grid article.filterable:has(.full-content)[data-id*="-managers"] { border-left-color: var(--bg-manager-badge) !important; }
+.modules-grid article.filterable:has(.full-content)[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge) !important; }
 
 /* Container for tags plassert i bunnen av modulkortet */
 .article-tags-bottom {
@@ -522,12 +606,13 @@ article.filterable:hover .read-more-btn {
   border-top: 1px dashed var(--border-color); /* En diskret linje over taggene når kortet er lukket */
 }
 
-/* NYTT/OPPDATERT: Gir ekstra luft over taggene spesifikt når modulen er åpnet (.full-content) */
+/* Gir ekstra luft over taggene spesifikt når modulen er åpnet */
 article.filterable:has(.full-content) .article-tags-bottom {
   border-top: none;          /* Fjerner den stiplete linjen når kortet er åpent */
-  margin-top: 30px;          /* Øker avstanden betraktelig (tilsvarer godt over en <br>) */
-  padding-top: 10px;         /* Ekstra luft på innsiden av containeren */
+  margin-top: 30px;          /* Øker avstanden betraktelig */
+  padding-top: 10px;         
 }
+
 /* Sørger for at markeringen inni en tag-knapp følger knappens stil */
 .tag-click-btn mark {
   padding: 0 1px;
