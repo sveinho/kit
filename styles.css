@@ -215,6 +215,7 @@ article.filterable {
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  will-change: transform; 
   
   /* OPPDATERT: Endre til 'text' slik at brukeren skjønner at hvitrom/abstract ikke er en knapp */
   cursor: text; 
