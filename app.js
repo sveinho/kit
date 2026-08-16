@@ -25,26 +25,22 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!response.ok) throw new Error('Failed to load JSON registry data');
       allArticles = await response.json();
       
-      // NY: Generer den globale tag-skyen med en gang dataene er hentet
       renderGlobalTagCloud();
       
       const urlParams = new URLSearchParams(window.location.search);
       const urlId = urlParams.get('id');
-      const urlTag = urlParams.get('tag'); // NY: Sjekker om URL-en har f.eks. ?tag=guide
+      const urlTag = urlParams.get('tag'); 
       const hash = window.location.hash || '';
       
       if (urlId && allArticles.some(a => a.id === urlId)) {
         activeArticleId = urlId;
         filterArticles(false); 
-        // Load the markdown for the deep-linked article and then scroll to hash if present
         await triggerDirectLinkFetch(urlId);
         if (hash) {
           setTimeout(scrollToHashInExpanded, 120);
-          // ensure URL retains hash
           history.replaceState({}, '', `${window.location.pathname}?id=${urlId}${hash}`);
         }
       } else if (urlTag) {
-        // NY: Hvis det finnes en tag i URL-en, aktiverer vi filteret med en gang
         activeTagFilter = decodeURIComponent(urlTag);
         filterArticles(true);
       } else {
@@ -104,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }, delay);
     };
   }
-
   // Create and reuse a single markdown-it renderer instance and apply anchor plugin once
   function getMarkdownRenderer() {
     if (window.__mdInstance) return window.__mdInstance;
@@ -119,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function() {
           permalinkClass: 'anchor',
           permalinkSymbol: '#',
           slugify: s => String(s).trim().toLowerCase()
-            .replace(/<\/?[^>]+(>|$)/g, '')         // strip tags if any
-            .replace(/[^\w\s-]/g, '')               // remove punctuation
-            .replace(/\s+/g, '-')                   // spaces -> dash
-            .replace(/-+/g, '-')                    // collapse dashes
+            .replace(/<\/?[^>]+(>|$)/g, '')         
+            .replace(/[^\w\s-]/g, '')               
+            .replace(/\s+/g, '-')                   
+            .replace(/-+/g, '-')                    
             .replace(/^-|-$/g, '')
         });
       }
@@ -145,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const target = (window.CSS && CSS.escape) ? expandedEl.querySelector(`#${CSS.escape(anchor)}`) : expandedEl.querySelector(`#${anchor}`);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      // CSS.escape might not exist on very old browsers; ignore failures
       console.warn('Could not scroll to hash:', err);
     }
   }
@@ -160,35 +154,29 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!a) return;
       const href = a.getAttribute('href') || '';
 
-      // Handle fragment-only links like "#section"
       if (href.startsWith('#')) {
         e.preventDefault();
         const anchor = href.slice(1);
-        // find the article containing this link (or use the active one)
         const articleEl = a.closest('.filterable') || articlesContainer.querySelector(`.filterable[data-id="${activeArticleId}"]`);
         if (!articleEl) return;
         const target = (window.CSS && CSS.escape) ? articleEl.querySelector(`#${CSS.escape(anchor)}`) : articleEl.querySelector(`#${anchor}`);
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          // update URL to include module id and hash
           history.pushState({}, '', `${window.location.pathname}?id=${articleEl.dataset.id}#${anchor}`);
         }
         return;
       }
 
-      // Try to interpret the href as a URL relative to the current location
       try {
         const url = new URL(href, window.location.href);
         const hash = url.hash || '';
         const idParam = url.searchParams.get('id');
 
-        // Case A: link to same page with id param (?id=module#anchor)
         if (url.pathname === window.location.pathname && idParam) {
           e.preventDefault();
           if (activeArticleId !== idParam) {
             await handleModuleSelection(idParam);
           } else {
-            // already active; ensure markdown is loaded
             const targ = allArticles.find(a => a.id === idParam);
             if (targ && !targ.markdownContent) await triggerDirectLinkFetch(idParam);
           }
@@ -199,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
-        // Case B: link directly to an articles/*.md file
         if (url.pathname.endsWith('.md')) {
           e.preventDefault();
           const parts = url.pathname.split('/');
@@ -218,15 +205,12 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
       } catch (err) {
-        // not a valid absolute/relative URL; ignore and let browser handle it
+        // Fallback for eksterne lenker
       }
-
-      // otherwise leave default behavior (external links, mailto, etc.)
     }, false);
 
     _anchorHandlerInstalled = true;
   }
-
   // Search Engine: Filters and sorts elements by track order, tags or relevance search
   function filterArticles(isNewQuery = false) {
     if (!articlesContainer) return;
@@ -235,18 +219,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const isSearching = searchWords.length > 0;
 
     if (isSearching) {
-      // Filter by search + optional track/tag
       filteredArticles = allArticles.filter(article => {
-        // 1. Filtrer på Track hvis aktivert
         if (activeTrackFilter !== 'all' && article.track !== activeTrackFilter) return false;
-
-        // 2. NY: Filtrer på aktiv Tag hvis en tag er trykket på
         if (activeTagFilter && (!article.tags || !article.tags.includes(activeTagFilter))) return false;
 
-        // 3. Fritekstsøk i tittel, abstract og i selve taggene til artikkelen
         const titleText = (article.title || '').toLowerCase();
         const abstractText = (article.abstract || '').toLowerCase();
-        const tagsText = (article.tags || []).join(' ').toLowerCase(); // NY: Gjør taggene søkbare i tekstfeltet
+        const tagsText = (article.tags || []).join(' ').toLowerCase(); 
         const combinedSearchText = `${titleText} ${abstractText} ${tagsText}`;
 
         return searchWords.every(word => {
@@ -257,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
 
-      // Sortering basert på relevans
       filteredArticles.sort((a, b) => {
         const titleA = (a.title || '').toLowerCase().trim();
         const titleB = (b.title || '').toLowerCase().trim();
@@ -289,19 +267,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     } else {
-      // Default state when not searching: Filter by active track or active tag if chosen
       filteredArticles = [...allArticles];
       
       if (activeTrackFilter !== 'all') {
         filteredArticles = filteredArticles.filter(article => article.track === activeTrackFilter);
       }
       
-      // NY: Hvis et tag-filter er aktivt utenom fritekstsøk, må vi filtrere listen her også
       if (activeTagFilter) {
         filteredArticles = filteredArticles.filter(article => article.tags && article.tags.includes(activeTagFilter));
       }
       
-      // Sort by Track group first, then by the structured order sequence
       filteredArticles.sort((a, b) => {
         const trackA = a.track || '';
         const trackB = b.track || '';
@@ -316,7 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     renderArticles();
   }
-
   // Renders learning modules and controls pagination slicing
   function renderArticles() {
     const searchWords = searchQuery.split(' ').filter(Boolean);
@@ -335,22 +309,14 @@ document.addEventListener('DOMContentLoaded', function() {
     articlesContainer.innerHTML = itemsToRender.map(article => {
       const isExpanded = article.id === activeArticleId;
       const displayTitle = isSearching ? getHighlightedHTML(article.title || '', searchWords) : article.title;
-      
-      // Plassert korrekt for bruk i HTML-genereringen senere
       const displayAbstract = isSearching ? getHighlightedHTML(article.abstract || '', searchWords) : (article.abstract || '');
       
-            const disciplineValue = article.discipline || 'Unknown';
+      const disciplineValue = article.discipline || 'Unknown';
       const tagsArray = article.tags || [];
 
-      // OPPDATERT: Sjekker om brukeren søker, og uthever søketreff inni selve tag-knappen
       const tagsHTML = tagsArray.map(tag => {
         const isActive = tag === activeTagFilter ? 'active' : '';
-        
-        // Hvis brukeren søker, kjører vi tag-teksten gjennom din eksisterende highlighter
-        const displayTagText = isSearching 
-          ? getHighlightedHTML(tag, searchWords) 
-          : tag;
-          
+        const displayTagText = isSearching ? getHighlightedHTML(tag, searchWords) : tag;
         return `<button class="badge status-${tag.toLowerCase().trim()} tag-click-btn ${isActive}" data-tag="${tag}">#${displayTagText}</button>`;
       }).join(' ');
 
@@ -359,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const md = getMarkdownRenderer();
         let htmlContent = article.markdownContent && md ? md.render(article.markdownContent) : 'Loading module text...';
 
-        // SIKRET: Disse ligger nå trygt plassert inne i if (isExpanded) blokken
         const nextArticle = allArticles.find(a => a.track === article.track && a.order === (article.order + 1));
         let nextBtnHTML = '';
         if (nextArticle) {
@@ -376,19 +341,22 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           </div>
         `;
-      } else {
-        expandedHTML = ``;
       }
 
+      // OPPDATERT: Gjenbruker den eksisterende badgen som en knapp med en indikasjonspil
+      const toggleIcon = isExpanded ? ' ▲' : ' ▼';
+      const badgeClass = isExpanded ? 'badge discipline-badge is-open' : 'badge discipline-badge';
 
-     return `
+      return `
         <article class="filterable" data-id="${article.id}">
-          <div class="article-header">
-            <h2>${displayTitle}</h2>
-            <div class="article-meta-inline">
-              <span class="badge discipline-badge">${disciplineValue}</span>
-            </div>
+          <div class="article-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+            <h2 class="article-title-clickable" style="cursor: pointer; margin: 0;">${displayTitle}</h2>
+            
+            <button class="${badgeClass}" data-id="${article.id}" style="cursor: pointer; flex-shrink: 0; white-space: nowrap;">
+              ${disciplineValue}${toggleIcon}
+            </button>
           </div>
+          
           <p class="abstract-text">${displayAbstract}</p>
           ${expandedHTML}
           
@@ -399,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     }).join('');
 
-    // REPARERT: Denne linjen manglet, som gjorde at klikk-lytterne aldri ble aktivert på nytt!
     attachArticleClickEvents();
 
     if (loadMoreWrapper) {
@@ -410,38 +377,39 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // After rendering, if an expanded module exists and the URL has a hash, scroll to the anchor
     scrollToHashInExpanded();
   }
-
   // Async loaders, navigation logic, and clipboard event handling
   function attachArticleClickEvents() {
     articlesContainer.querySelectorAll('.filterable').forEach(articleEl => {
+      const articleId = articleEl.dataset.id;
       
-      articleEl.addEventListener('click', async function(e) {
-        // SIKRET: Hvis brukeren trykker på en tag-knapp i artikkelkortet, 
-        // skal vi trigge tag-filtrering i stedet for å åpne modulen.
-        if (e.target.classList.contains('tag-click-btn')) {
+      // 1. Klikk på tag-badges i bunnen
+      articleEl.querySelectorAll('.tag-click-btn').forEach(tagBtn => {
+        tagBtn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const selectedTag = e.target.dataset.tag;
-          handleTagSelection(selectedTag);
-          return;
-        }
-
-        if (
-          e.target.classList.contains('close-article-btn') || 
-          e.target.classList.contains('share-btn') || 
-          e.target.classList.contains('next-step-btn') ||
-          e.target.type === 'checkbox'
-        ) return;
-
-        // SIKRET: Bruker 'this.dataset.id' (selve kortet) i stedet for 'e.target' 
-        // slik at klikk på gule <mark>-ord eller badges alltid åpner riktig modul
-        const articleId = this.dataset.id;
-        handleModuleSelection(articleId);
+          handleTagSelection(this.dataset.tag);
+        });
       });
 
-      // Next step navigation engine
+      // 2. Klikk på den interaktive disiplin-badgen (øverst til høyre)
+      const disciplineBtn = articleEl.querySelector('.discipline-badge');
+      if (disciplineBtn) {
+        disciplineBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          handleModuleSelection(articleId);
+        });
+      }
+
+      // 3. Klikk på selve tittelen (øverst til venstre)
+      const titleEl = articleEl.querySelector('.article-title-clickable');
+      if (titleEl) {
+        titleEl.addEventListener('click', function(e) {
+          e.stopPropagation();
+          handleModuleSelection(articleId);
+        });
+      }
+
       const nextBtn = articleEl.querySelector('.next-step-btn');
       if (nextBtn) {
         nextBtn.addEventListener('click', function(e) {
@@ -455,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (shareBtn) {
         shareBtn.addEventListener('click', function(e) {
           e.stopPropagation(); 
-          const articleId = this.dataset.id;
           const shareUrl = `${window.location.origin}${window.location.pathname}?id=${articleId}`;
           
           navigator.clipboard.writeText(shareUrl).then(() => {
@@ -484,7 +451,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // NY: Genererer en global tag-sky øverst basert på tilgjengelig data
   function renderGlobalTagCloud() {
     const cloudContainer = document.getElementById('globalTagCloud');
     if (!cloudContainer) return;
@@ -506,7 +472,6 @@ document.addEventListener('DOMContentLoaded', function() {
       return `<button class="global-tag-btn ${isActive}" data-tag="${tag}">#${tag}</button>`;
     }).join(' ');
 
-    // Legg til klikklyttere på de globale tag-knappene
     cloudContainer.querySelectorAll('.global-tag-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         handleTagSelection(this.dataset.tag);
@@ -514,10 +479,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // NY: Sentral tilstandskontroll for valg/fjerning av tag-filter og URL-pushing
   function handleTagSelection(tagName) {
     if (activeTagFilter === tagName) {
-      // Hvis brukeren trykker på en allerede aktiv tag, skrur vi den av
       activeTagFilter = null;
       history.pushState({}, '', window.location.pathname);
     } else {
@@ -526,12 +489,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (resetBtn) resetBtn.classList.remove('invisible');
     }
     
-    // Oppdater både den globale tag-skyen og selve artikkellisten
     renderGlobalTagCloud();
     filterArticles(true);
   }
 
-  // Central state controller for processing learning track traversal
   async function handleModuleSelection(articleId) {
     const targetArticle = allArticles.find(a => a.id === articleId);
 
@@ -555,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         targetArticle.markdownContent = mdText;
         filterArticles(false);
-        // If there's a hash in the current URL, scroll to it after render
         if (currentHash) setTimeout(scrollToHashInExpanded, 120);
       } catch (err) {
         console.error("Could not load markdown details:", err);
@@ -564,7 +524,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
     } else {
-      // If markdown already available but there's a hash, ensure scrolling
       if (window.location.hash) setTimeout(scrollToHashInExpanded, 120);
     }
 
@@ -574,7 +533,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateSearchUI(count, isSearching) {
     if (searchCounter) {
-      // OPPDATERT: Tar høyde for om et tag-filter kjører i bakgrunnen
       const filterNotice = activeTagFilter ? ` filtered by #${activeTagFilter}` : '';
       searchCounter.textContent = isSearching 
         ? `Found ${count} matching steps sorted by relevance${filterNotice}`
@@ -587,10 +545,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) searchInput.value = ''; 
     searchQuery = ''; 
     activeArticleId = null;
-    activeTagFilter = null; // NY: Tømmer tag-filteret ved fullstendig tilbakestilling
+    activeTagFilter = null; 
     history.pushState({}, '', window.location.pathname); 
     if (resetBtn) resetBtn.classList.add('invisible');
-    renderGlobalTagCloud(); // NY: Tegn skyen på nytt så "active"-klassen fjernes
+    renderGlobalTagCloud(); 
     filterArticles(true);
   }
 
@@ -607,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
       searchQuery = currentInput.toLowerCase();
       
       if (resetBtn) {
-        if (currentInput.length > 0 || activeTagFilter) { // OPPDATERT: Vis reset om enten tekst eller tag er aktiv
+        if (currentInput.length > 0 || activeTagFilter) { 
           resetBtn.classList.remove('invisible');
         } else {
           resetBtn.classList.add('invisible');
@@ -621,7 +579,6 @@ document.addEventListener('DOMContentLoaded', function() {
     resetBtn.addEventListener('click', resetEntireRegistry);
   }
 
-  // Role Selection Button Controller
   const filterButtons = document.querySelectorAll('.filter-btn');
   filterButtons.forEach(btn => {
     btn.addEventListener('click', function() {
@@ -633,7 +590,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Install anchor handler before loading articles so links work immediately
   installInternalAnchorHandler();
   loadArticles();
 });
