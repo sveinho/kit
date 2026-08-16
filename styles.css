@@ -251,6 +251,9 @@ article.filterable:hover {
   color: var(--text-main);
 }
 
+.article-header h2:hover {
+  color: var(--color-tag-active);
+
 .article-meta-inline {
   display: flex;
   gap: 6px;
