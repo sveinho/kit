@@ -253,6 +253,7 @@ article.filterable:hover {
 
 .article-header h2:hover {
   text-decoration: underline;
+}
 
 .article-meta-inline {
   display: flex;
