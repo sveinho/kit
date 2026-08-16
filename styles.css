@@ -107,18 +107,16 @@ body {
 }
 
 .content-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
+   padding: 20px;
+  width: 100%;
 }
 
 /* ==========================================================================
    3. CONTROL PANEL (SEARCH & TAG CLOUD)
    ========================================================================== */
 .control-panel {
-  max-width: 900px;
-  margin: 30px auto 10px auto;
   padding: 0 20px;
+  width: 100%;
 }
 
 .search-wrapper {
