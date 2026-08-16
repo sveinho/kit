@@ -296,7 +296,7 @@ article.filterable:hover {
 
 /* --- THEME 1: Researchers --- */
 article.filterable[data-id*="-researchers"] {
-  border-left-color: var(--bg-researcher-badge);
+
 }
 article.filterable[data-id*="-researchers"] .discipline-badge {
   background-color: var(--bg-researcher-badge);
