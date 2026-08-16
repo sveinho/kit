@@ -206,9 +206,11 @@ body {
   flex-direction: column;
   gap: 20px;
   margin-top: 10px;
+   align-items: stretch; 
 }
 
 article.filterable {
+   width: 100%; 
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-left: 6px solid #cbd5e0;
