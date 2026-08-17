@@ -356,10 +356,9 @@ mark {
 }
 
 .tag-cloud-trigger {
-  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-tag-active);
   cursor: pointer;
@@ -367,7 +366,7 @@ mark {
   user-select: none;
   transition: opacity 0.2s ease;
   margin-top: 20px; /* Juster tallet opp eller ned etter behov */
-  display: block; 
+  display: inline-block; 
 }
 
 .tag-cloud-trigger:hover {
@@ -384,7 +383,7 @@ mark {
 .tag-cloud-wrapper[open] .tag-cloud-trigger::after {
   transform: rotate(90deg); /* Pilen peker nedover når den er åpen */
   margin-top: 20px; /* Juster tallet opp eller ned etter behov */
-  display: block; 
+  display: inline-block; 
 }
 /* ==========================================================================
    5. BUTTONS & ACTIONS
