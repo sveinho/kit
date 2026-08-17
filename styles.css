@@ -280,6 +280,7 @@ article.filterable:hover {
   letter-spacing: 0.05em;
   background-color: #edf2f7;
   color: #4a5568;
+   border: none;
 }
 
 /* Gjør tag-badges inni artiklene interaktive og klikkbare */
@@ -312,6 +313,7 @@ article.filterable[data-id*="-researchers"] {
 article.filterable[data-id*="-researchers"] .discipline-badge {
   background-color: var(--bg-researcher-badge);
   color: var(--color-researcher);
+   border: none;
 }
 
 /* --- THEME 2: Managers --- */
@@ -321,6 +323,7 @@ article.filterable[data-id*="-managers"] {
 article.filterable[data-id*="-managers"] .discipline-badge {
   background-color: var(--bg-manager-badge);
   color: var(--color-manager);
+   border: none;
 }
 
 /* --- THEME 3: Trainers --- */
@@ -330,6 +333,7 @@ article.filterable[data-id*="-trainers"] {
 article.filterable[data-id*="-trainers"] .discipline-badge {
   background-color: var(--bg-trainer-badge);
   color: var(--color-trainer);
+   border: none;
 }
 
 .abstract-text {
