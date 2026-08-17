@@ -366,6 +366,8 @@ mark {
   list-style: none; /* Skjuler pilen i Firefox/Safari */
   user-select: none;
   transition: opacity 0.2s ease;
+  margin-top: 20px; /* Juster tallet opp eller ned etter behov */
+  display: block; 
 }
 
 .tag-cloud-trigger:hover {
