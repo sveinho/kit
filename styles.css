@@ -259,7 +259,7 @@ article.filterable:hover {
 
 .article-header h2:hover {
   color: var(--color-tag-active);                   /* Går over til primærfarge i stedet for bare understreking */
-  text-decoration: none;
+   text-decoration: underline; 
 }
 
 .article-meta-inline {
