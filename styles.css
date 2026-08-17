@@ -6,9 +6,9 @@
   --font-mono: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
   
   /* Shared Layout Colors */
-  --bg-app: #f8f9fa;
+  --bg-app: #f4f6f8;        /* Litt dypere gråfarge for bedre kontrast mot hvite kort */
   --bg-card: #ffffff;
-  --text-main: #2d3748;
+  --text-main: #1a202c;     /* Mørkere tekst for økt lesbarhet */
   --text-muted: #718096;
   --border-color: #e2e8f0;
   
@@ -24,6 +24,8 @@
 
   /* Tag System Colors */
   --color-tag-active: #0d2173;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -48,6 +50,7 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+
 /* Layout-beholder som deler skjermen i to kolonner */
 .layout-container {
     display: grid;
@@ -55,7 +58,7 @@ body {
     gap: 30px;                       /* Mellomrom mellom meny og innhold */
     max-width: 1400px;               /* Maksimal bredde på hele siden */
     margin: 0 auto;                  /* Sentrerer layouten */
-    padding: 20px;
+    padding: 30px 20px;
 }
 
 /* Gjør om knappene i menyen fra en rad til en vertikal liste */
@@ -90,20 +93,21 @@ body {
 .main-header {
   background: #ffffff;
   color: #0d2173;
-  padding: 40px 20px;
+  padding: 50px 20px;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-container h1 {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
 }
 
 .header-container p {
-  color: #666f7a;
-  font-size: 1.1rem;
+  color: #4a5568;
+  font-size: 1.15rem;
 }
 
 .content-container {
@@ -115,7 +119,7 @@ body {
    3. CONTROL PANEL (SEARCH & TAG CLOUD)
    ========================================================================== */
 .control-panel {
-  padding: 0 20px;
+  padding: 0; /* Justert for å flukte pent i layouten */
   width: 100%;
 }
 
@@ -129,16 +133,17 @@ body {
   width: 100%;
   padding: 14px 45px 14px 16px;
   font-size: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
+  border: 1px solid var(--border-color); /* Tynnere, mer moderne ramme */
+  border-radius: 12px;                  /* Rundere hjørner */
   background-color: #ffffff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
 #searchInput:focus {
   outline: none;
-  border-color: #4a5568;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+  border-color: var(--color-tag-active);
+  box-shadow: 0 0 0 4px rgba(13, 33, 115, 0.1); /* Matcher sidens hovedfarge */
 }
 
 #resetSearchBtn {
@@ -161,41 +166,43 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 15px 0 5px 0;
+  margin: 20px 0 5px 0;
 }
 
 /* Stil for de klikkbare tag-knappene øverst */
 .global-tag-btn {
   background-color: #ffffff;
   color: var(--text-main);
-  border: 1px solid var(--border-color);
+  border: none;                         /* Fjernet rammen helt */
   border-radius: 20px;
-  padding: 5px 14px;
+  padding: 8px 16px;                    /* Litt mer luft innvendig */
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;                     /* Litt tykkere tekst siden rammen er borte */
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);         /* Gir knappen form og dybde uten ramme */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .global-tag-btn:hover {
-  background-color: #f1f3f5;
-  border-color: #cbd5e0;
+  background-color: #ffffff;
+  transform: translateY(-1px);          /* Subtil løfte-effekt */
+  box-shadow: var(--shadow-md);         /* Myk, moderne skygge ved hover */
 }
 
 /* Visuell markering når en global tag er aktivt valgt */
 .global-tag-btn.active {
   background-color: var(--color-tag-active) !important;
   color: #ffffff !important;
-  border-color: var(--color-tag-active) !important;
+  box-shadow: 0 4px 12px rgba(13, 33, 115, 0.25); /* Moderne glød på aktiv knapp */
+  transform: none;
 }
 
 .search-counter {
-  margin-top: 12px;
+  margin-top: 16px;
   font-size: 0.9rem;
   color: var(--text-muted);
   font-weight: 500;
 }
-
 /* ==========================================================================
    4. ARTICLE CARDS & THEMES
    ========================================================================== */
@@ -204,26 +211,28 @@ body {
   flex-direction: column;
   gap: 20px;
   margin-top: 10px;
-   align-items: stretch; 
+  align-items: stretch; 
 }
 
 article.filterable {
-   width: 100%; 
+  width: 100%; 
   background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-left: 6px solid #cbd5e0;
-  border-radius: 8px;
+  border: none;                                     /* Fjernet standard grå ramme */
+  border-left: 6px solid #cbd5e0;                   /* Beholder fargeindikatoren på venstre side */
+  border-radius: 12px;                              /* Mer moderne, rundere hjørner */
   padding: 24px;
   will-change: transform; 
+  box-shadow: var(--shadow-sm);                     /* Bruker den nye, myke skyggen */
   
   /* OPPDATERT: Endre til 'text' slik at brukeren skjønner at hvitrom/abstract ikke er en knapp */
   cursor: text; 
   
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 article.filterable:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);                      /* Løfter kortet litt mer for en dynamisk følelse */
+  box-shadow: var(--shadow-md);                     /* Dypere skygge ved hover */
 }
 
 .article-header {
@@ -243,12 +252,14 @@ article.filterable:hover {
 
 .article-header h2 {
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: 700;                                 /* Litt tykkere overskrift */
   color: var(--text-main);
+  transition: color 0.15s ease;
 }
 
 .article-header h2:hover {
-  text-decoration: underline;
+  color: var(--color-tag-active);                   /* Går over til primærfarge i stedet for bare understreking */
+  text-decoration: none;
 }
 
 .article-meta-inline {
@@ -261,7 +272,7 @@ article.filterable:hover {
 /* Badges Base */
 .badge {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 5px 12px;                                /* Litt mer luft innvendig */
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -273,26 +284,30 @@ article.filterable:hover {
 
 /* Gjør tag-badges inni artiklene interaktive og klikkbare */
 .tag-click-btn {
+  border: none;                                     /* Sikrer at rammen er borte */
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
 }
 
 .tag-click-btn:hover {
   background-color: #e2e8f0;
   color: var(--text-main);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Aktiv markering av valgt tag inni artikkelkortet */
 .tag-click-btn.active {
   background-color: var(--color-tag-active) !important;
   color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(13, 33, 115, 0.2);
 }
 
 /* --- THEME 1: Researchers --- */
 article.filterable[data-id*="-researchers"] {
-
+  border-left-color: var(--bg-researcher-badge);    /* Lagt til for å matche de andre temaene */
 }
 article.filterable[data-id*="-researchers"] .discipline-badge {
   background-color: var(--bg-researcher-badge);
@@ -321,14 +336,15 @@ article.filterable[data-id*="-trainers"] .discipline-badge {
   color: var(--text-muted);
   font-size: 0.95rem;
   margin-bottom: 16px;
+  line-height: 1.6;                                 /* Litt mer linjeavstand for bedre lesbarhet */
 }
 
 /* Text Highlighting Search Match */
 mark {
   background-color: #fef3c7;
   color: #92400e;
-  padding: 0 2px;
-  border-radius: 2px;
+  padding: 2px 4px;                                 /* Litt mer luft rundt markert tekst */
+  border-radius: 4px;
 }
 
 /* ==========================================================================
@@ -343,11 +359,12 @@ mark {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  transition: color 0.15s;
+  gap: 4px;                                         /* Avstand til eventuelle piler/ikoner */
+  transition: color 0.15s ease;
 }
 
 article.filterable:hover .read-more-btn {
-  color: #2b6cb0;
+  color: var(--color-tag-active);                   /* Bruker sidens primærfarge ved hover */
 }
 
 .learning-path-actions {
@@ -356,38 +373,43 @@ article.filterable:hover .read-more-btn {
   border-top: 1px solid var(--border-color);
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;                                  /* Sikrer at knapper ikke krasjer på små skjermer */
 }
 
 .next-step-btn {
   background-color: #27ae60;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 12px 24px;                               /* Litt mer romslig padding */
+  border-radius: 8px;                               /* Mer moderne hjørner */
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.15s;
+  box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);
+  transition: all 0.2s ease;
 }
 
 .next-step-btn:hover {
   background-color: #219653;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.25);
 }
 
 .share-btn, .close-article-btn {
   background-color: #edf2f7;
   color: #4a5568;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: all 0.2s ease;
 }
 
 .share-btn:hover {
   background-color: #e2e8f0;
+  color: var(--text-main);
 }
 
 .share-btn.copied {
@@ -407,60 +429,68 @@ article.filterable:hover .read-more-btn {
 /* Pagination bar button */
 .pagination-bar {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .primary-btn {
-  background-color: #4a5568;
+  background-color: var(--text-main);              /* Koblet til variabelen for konsistens */
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
+  padding: 14px 28px;
+  border-radius: 10px;                              /* Rundere, moderne knapp */
   font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: background-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
 .primary-btn:hover {
-  background-color: #2d3748;
+  background-color: #000000;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
-
 /* ==========================================================================
    6. MARKDOWN RENDERING CONTAINER (.markdown-body)
-   ========================================================================== */
+   ========================================================================= */
 .full-content {
-  margin-top: 20px;
-  animation: fadeIn 0.25s ease-out;
+  margin-top: 24px;
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .markdown-body {
-  color: #2d3748;
+  color: var(--text-main);              /* Koblet direkte til global variabel */
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.75;                    /* Litt mer linjeavstand for økt lesbarhet */
 }
 
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
   color: #1a202c;
-  font-weight: 600;
-  margin-top: 24px;
-  margin-bottom: 12px;
+  font-weight: 700;                     /* Litt tykkere vekt for et mer moderne uttrykk */
+  margin-top: 32px;                     /* Mer luft over overskrifter */
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
 }
 
-.markdown-body h1 { font-size: 1.6rem; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; }
-.markdown-body h2 { font-size: 1.3rem; }
-.markdown-body h3 { font-size: 1.1rem; }
+.markdown-body h1 { 
+  font-size: 1.75rem; 
+  border-bottom: 1px solid var(--border-color); /* Tynnere, mer elegant skillelinje */
+  padding-bottom: 8px; 
+}
+.markdown-body h2 { font-size: 1.4rem; }
+.markdown-body h3 { font-size: 1.2rem; }
 
 .markdown-body p {
-  margin-bottom: 16px;
+  margin-bottom: 18px;                  /* Økt ørlite for bedre rytme i teksten */
 }
 
 .markdown-body ul, .markdown-body ol {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   padding-left: 24px;
 }
 
 .markdown-body li {
-  margin-bottom: 6px;
+  margin-bottom: 8px;                   /* Mer luft mellom listepunkter */
 }
 
 /* Markdown Task Lists Rules - SIKRET: Fungerer perfekt med ny klikklogikk */
@@ -470,20 +500,21 @@ article.filterable:hover .read-more-btn {
 }
 
 .markdown-body input[type="checkbox"] {
-  margin-right: 10px;
-  transform: scale(1.15);
+  margin-right: 12px;
+  transform: scale(1.2);                /* Gjort ørlite større og mer treffsikker */
   vertical-align: middle;
   cursor: pointer;
+  accent-color: var(--color-tag-active); /* Sørger for at sjekkboksen matcher appens farge når den er valgt */
 }
 
 /* Blockquotes ( > text ) */
 .markdown-body blockquote {
-  border-left: 4px solid #cbd5e0;
+  border-left: 4px solid #cbd5e0;       /* Holder linjen stilren */
   color: #4a5568;
-  background-color: #f7fafc;
-  padding: 12px 16px;
-  margin: 18px 0;
-  border-radius: 0 4px 4px 0;
+  background-color: #f8fafc;            /* Lysere, renere bakgrunn */
+  padding: 16px 20px;                   /* Mer innvendig luft */
+  margin: 24px 0;
+  border-radius: 4px;                   /* Små, moderne hjørner rundt hele sitatet */
   font-style: italic;
 }
 
@@ -491,21 +522,22 @@ article.filterable:hover .read-more-btn {
 .markdown-body pre {
   background-color: #1a202c;
   color: #edf2f7;
-  padding: 16px;
-  border-radius: 6px;
+  padding: 18px;                        /* Litt mer luft rundt koden */
+  border-radius: 8px;                   /* Rundere og mer moderne hjørner */
   overflow-x: auto;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   font-family: var(--font-mono);
   font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);         /* Lagt til en subtil skygge på mørke kodeblokker */
 }
 
 .markdown-body code {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background-color: #edf2f7;
-  color: #e53e3e;
-  padding: 2px 6px;
-  border-radius: 4px;
+  background-color: #f1f5f9;            /* Lysere og mer nøytral gråbakgrunn */
+  color: #db2777;                       /* Mer moderne rosa/rød-tone ( Tailwind/GitHub-stil ) */
+  padding: 3px 6px;                     /* Litt mer luft rundt inline-kode */
+  border-radius: 6px;                   /* Mer avrundede hjørner */
 }
 
 .markdown-body pre code {
@@ -513,38 +545,50 @@ article.filterable:hover .read-more-btn {
   color: inherit;
   padding: 0;
   font-size: inherit;
+  border-radius: 0;                     /* Nullstiller hjørner inni pre-blokker */
 }
 
+/* Enkel animasjon brukt i .full-content */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 /* ==========================================================================
    7. FOOTER & FEEDBACK BOXES
    ========================================================================== */
 .feedback-box {
   background-color: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border: none;                         /* Fjernet rammen helt */
+  border-radius: 12px;                  /* Mer moderne, rundere hjørner */
   padding: 40px;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 25px;
+  box-shadow: var(--shadow-sm);         /* Subtil skygge i stedet for ramme */
 }
 
 .feedback-box h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
   margin-bottom: 8px;
   color: var(--text-main);
 }
 
 .main-footer {
   text-align: center;
-  padding: 30px 20px;
+  padding: 40px 20px;                   /* Litt mer vertikal luft */
   color: var(--text-muted);
   font-size: 0.85rem;
   border-top: 1px solid var(--border-color);
-  margin-top: 60px;
+  margin-top: 8px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* ( @keyframes fadeIn er flyttet til del 3 for å unngå duplikater ) */
 
 /* ==========================================================================
    8. ROLE FILTER BUTTONS (Stil for selve knappene)
@@ -552,25 +596,27 @@ article.filterable:hover .read-more-btn {
 .filter-btn {
   background-color: #ffffff;
   color: var(--text-main);
-  border: 1px solid var(--border-color);
-  padding: 8px 16px;
+  border: none;                         /* Fjernet rammen rundt filterknappene */
+  padding: 10px 18px;                   /* Subtilt mer luft innvendig */
   border-radius: 20px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;                     /* Litt tykkere tekst for økt lesbarhet uten ramme */
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);         /* Gir knappen form */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .filter-btn:hover {
-  background-color: #edf2f7;
-  transform: translateY(-1px);
+  background-color: #ffffff;
+  transform: translateY(-1px);          /* Gir en følelse av vekt når man holder over */
+  box-shadow: var(--shadow-md);         /* Mykere skygge på hover */
 }
 
 .filter-btn.active {
-  background-color: #2d3748;
+  background-color: var(--text-main);   /* Bruker variabelen for et helhetlig design */
   color: #ffffff;
-  border-color: #2d3748;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25); /* Moderne skygge med fargetone på aktiv knapp */
+  transform: none;
 }
 
 /* ==========================================================================
@@ -578,11 +624,12 @@ article.filterable:hover .read-more-btn {
    ========================================================================== */
 /* 1. Slå på dimming av alle kort når ett kort er utvidet */
 .modules-grid:has(article.filterable .full-content) article.filterable {
-  opacity: 0.4;
-  filter: grayscale(80%);
+  opacity: 0.5;                         /* Justert opp fra 0.4 for litt bedre lesbarhet */
+  filter: grayscale(60%);               /* Subtilt mindre aggressiv gråfarge */
   transform: scale(0.98);
   border-left-color: #cbd5e0 !important; /* Tvinger en nøytral grå ramme på de inaktive */
-  transition: all 0.3s ease;
+  box-shadow: none;                     /* Fjerner skyggen på de inaktive for å fremheve det aktive */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 2. Hold det aktive/utvidede kortet fullt synlig */
@@ -590,7 +637,7 @@ article.filterable:hover .read-more-btn {
   opacity: 1 !important;
   filter: grayscale(0%) !important;
   transform: scale(1) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); /* Økt skygge for en dypere 3D/pop-out effekt */
 }
 
 /* 3. Gjenopprett de unike temafargene på rammen kun for det aktive kortet */
@@ -603,26 +650,26 @@ article.filterable:hover .read-more-btn {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border-color); /* En diskret linje over taggene når kortet er lukket */
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color); /* Erstattet 'dashed' med en ren, tynn linje */
 }
 
 /* Gir ekstra luft over taggene spesifikt når modulen er åpnet */
 article.filterable:has(.full-content) .article-tags-bottom {
-  border-top: none;          /* Fjerner den stiplete linjen når kortet er åpent */
-  margin-top: 30px;          /* Øker avstanden betraktelig */
-  padding-top: 10px;         
+  border-top: none;          /* Fjerner skillelinjen når kortet er åpent */
+  margin-top: 32px;          /* Mer luft for å skille innhold og tags */
+  padding-top: 0;         
 }
 
 /* Sørger for at markeringen inni en tag-knapp følger knappens stil */
 .tag-click-btn mark {
-  padding: 0 1px;
-  border-radius: 1px;
+  padding: 2px 4px;          /* Litt mer luft rundt søketeksten inni tags */
+  border-radius: 4px;
 }
 
 /* Hvis taggen er aktiv (mørkeblå), gjør vi det gule merket invertert så teksten forblir lettlest */
 .tag-click-btn.active mark {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
