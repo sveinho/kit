@@ -350,7 +350,38 @@ mark {
   padding: 2px 4px;                                 /* Litt mer luft rundt markert tekst */
   border-radius: 4px;
 }
+/* Skjul den standard, kjedelige nettleser-pilen */
+.tag-cloud-wrapper summary::-webkit-details-marker {
+  display: none;
+}
 
+.tag-cloud-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-tag-active);
+  cursor: pointer;
+  list-style: none; /* Skjuler pilen i Firefox/Safari */
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.tag-cloud-trigger:hover {
+  opacity: 0.8;
+}
+
+/* Legg til en moderne pil som roterer når den åpnes */
+.tag-cloud-trigger::after {
+  content: "→";
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.tag-cloud-wrapper[open] .tag-cloud-trigger::after {
+  transform: rotate(90deg); /* Pilen peker nedover når den er åpen */
+}
 /* ==========================================================================
    5. BUTTONS & ACTIONS
    ========================================================================== */
