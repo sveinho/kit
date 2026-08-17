@@ -382,7 +382,7 @@ mark {
 
 .tag-cloud-wrapper[open] .tag-cloud-trigger::after {
   transform: rotate(90deg); /* Pilen peker nedover når den er åpen */
-  margin-top: 20px; /* Juster tallet opp eller ned etter behov */
+  margin-top: 2px; /* Juster tallet opp eller ned etter behov */
   display: inline-block; 
 }
 /* ==========================================================================
