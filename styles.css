@@ -381,6 +381,8 @@ mark {
 
 .tag-cloud-wrapper[open] .tag-cloud-trigger::after {
   transform: rotate(90deg); /* Pilen peker nedover når den er åpen */
+  margin-top: 20px; /* Juster tallet opp eller ned etter behov */
+  display: block; 
 }
 /* ==========================================================================
    5. BUTTONS & ACTIONS
