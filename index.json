@@ -11,8 +11,8 @@
   {
     "id": "data-management-researchers",
     "title": "Planning data sharing in research projects",
-    "track": "A researchers",
-    "order": 1,
+    "track": "researchers",
+    "order": 001,
     "discipline": "Researchers Module #1",
     "tags": ["fair", "quality", "metadata", "raw-data"],    
     "abstract": "Learn how to structure and document your raw research data to meet standards and open-science policies."
@@ -20,8 +20,8 @@
   {
     "id": "data-sharing-researchers",
     "title": "Choosing a repository for your data",
-    "track": "B researchers",
-    "order": 1,
+    "track": "researchers",
+    "order": 002,
     "discipline": "Researchers Module #2",
     "tags": ["EDEN registry", "re3data", "trustworthy"],
     "abstract": "Learn how to find a good home for your data."
@@ -29,8 +29,8 @@
   {
     "id": "preservation-researchers",
     "title": "Preparing research data deposits ",
-    "track": "C researchers",
-    "order": 1,
+    "track": "researchers",
+    "order": 003,
     "discipline": "Researchers Module #3",
     "tags": ["archiving", "dmp", "security"],
     "abstract": "The final step focuses on archiving data securely for 10+ years and submitting your final DMP report."
