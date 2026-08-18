@@ -65,28 +65,28 @@
   {
     "id": "data-management-trainers",
     "title": "Teaching Data Management",
-    "track": "trainers",
-    "order": 1,
     "discipline": "Trainers Module #1",
+    "abstract": "Learn how to transform dry data policies into engaging, memorable lessons for data literacy workshops.",
     "tags": ["teaching", "workshop", "literacy"],
-    "abstract": "Learn how to transform dry data policies into engaging, memorable lessons for data literacy workshops."
+     "track": "trainers",
+    "order": 1
   },
   {
     "id": "curriculum-trainers",
     "title": "Curriculum Design for Data Literacy",
-    "track": "trainers",
-    "order": 2,
     "discipline": "Trainers Module #2",
+    "abstract": "Learn how to map out a multi-day training workshop and tailor technical jargon to audiences with varying skill levels.",
     "tags": ["curriculum", "workshop", "design"],
-    "abstract": "Learn how to map out a multi-day training workshop and tailor technical jargon to audiences with varying skill levels."
+    "track": "trainers",
+    "order": 2
   },
   {
     "id": "evaluation-trainers",
     "title": "Measuring Training Impact",
-    "track": "trainers",
-    "order": 3,
     "discipline": "Trainers Module #3",
+    "abstract": "The final step for trainers focuses on evaluating the long-term success of your workshops and gathering feedback to iterate.",
     "tags": ["evaluation", "feedback", "metrics"],
-    "abstract": "The final step for trainers focuses on evaluating the long-term success of your workshops and gathering feedback to iterate."
+    "track": "trainers",
+    "order": 3
   }
 ]
