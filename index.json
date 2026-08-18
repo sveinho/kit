@@ -47,11 +47,11 @@
   {
     "id": "security-managers",
     "title": "Risk Management and Data Security",
-    "track": "managers",
-    "order": 2,
     "discipline": "Managers Module #2",
     "tags": ["security", "risk", "cloud"],
-    "abstract": "Shift focus toward mitigating risks, handling sensitive data (PII), and implementing cloud security strategies."
+    "abstract": "Shift focus toward mitigating risks, handling sensitive data (PII), and implementing cloud security strategies.",
+    "track": "managers",
+    "order": 2
   },
   {
     "id": "analytics-managers",
