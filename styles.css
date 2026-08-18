@@ -345,7 +345,7 @@ article.filterable[data-id*="-trainers"] .discipline-badge {
 
 /* Text Highlighting Search Match */
 mark {
-  background-color: #fef3c7;
+  background-color: #FEF531;
   color: #92400e;
   padding: 2px 4px;                                 /* Litt mer luft rundt markert tekst */
   border-radius: 4px;
