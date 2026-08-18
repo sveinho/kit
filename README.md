@@ -1,6 +1,6 @@
 Note on sorting and order:
 
-To understand how the articles shift around when using your solution, we need to distinguish between two completely different modes in your search engine. 
+To understand how the articles shift around when using the solution, we need to distinguish between two completely different modes in your search engine. 
 
 Your code (in filterArticles from Part 3) is split in two based on whether the search field is empty or not.
 
