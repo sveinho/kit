@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
           permalink: true,
           permalinkBefore: false,
           permalinkClass: 'anchor',
-          permalinkSymbol: '§',
+          permalinkSymbol: '#',
           slugify: s => String(s).trim().toLowerCase()
             .replace(/<\/?[^>]+(>|$)/g, '')         
             .replace(/[^\w\s-]/g, '')               
