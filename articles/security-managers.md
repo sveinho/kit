@@ -1,10 +1,9 @@
 > Create a nice single-page documentation website from one or more Markdown files
 ### Table of Contents
 * [Installation](#installation)
-* [Configuration](#configuration)
-    * [Advanced Settings](#advanced-settings)
-* [Usage](#usage)
-* [License](#license)# Features
+* [title](#title)
+* [share](#share)
+
 
 - Zero configuration
 - Re-nder a table of contents, shortcuts to the top-level sections, and custom links
@@ -61,7 +60,7 @@ The base URL of the single-page website.
 
 - Defaults to `null`
 
-## `"title"`
+## title
 
 (*`null`* or *`string`*)
 
@@ -109,7 +108,7 @@ The URL or file path of the favicon image to use.
 
 - Defaults to `null`
 
-## `"shareImage"`
+## share
 
 (*`null`* or *`string`*)
 
