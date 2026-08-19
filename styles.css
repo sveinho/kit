@@ -60,7 +60,12 @@ body {
     margin: 0 auto;                  /* Sentrerer layouten */
     padding: 30px 20px;
 }
-
+.anchor {
+  margin-left: 10px;
+  color: #0076ff !important;
+  display: inline-block !important;
+  visibility: visible !important;
+}
 /* Gjør om knappene i menyen fra en rad til en vertikal liste */
 .filter-buttons-wrapper {
     display: flex;
