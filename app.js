@@ -107,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const md = mdCtor ? mdCtor({ html: true, linkify: true }) : null;
 
     try {
-      if (md && window.markdownitAnchor && typeof window.markdownitAnchor === 'function') {
-        md.use(window.markdownitAnchor, {
+      if (md && window.markdownItAnchor && typeof window.markdownItAnchor === 'function') {
+        md.use(window.markdownItAnchor, {
           permalink: true,
           permalinkBefore: false,
           permalinkClass: 'anchor',
