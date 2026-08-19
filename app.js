@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
           permalink: true,
           permalinkBefore: false,
           permalinkClass: 'anchor',
-          permalinkSymbol: '#',
+          permalinkSymbol: '§',
           slugify: s => String(s).trim().toLowerCase()
             .replace(/<\/?[^>]+(>|$)/g, '')         
             .replace(/[^\w\s-]/g, '')               
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
     } catch (err) {
-      console.warn('markdown-it-anchor plugin not applied:', err);
+      console.warn('markdownItAnchor plugin not applied:', err);
     }
 
     window.__mdInstance = md;
