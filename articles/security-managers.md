@@ -133,7 +133,7 @@ Use the following syntax to include the entire contents of a local file `foo.md`
 ```
 ./foo.md
 ```
-
+*Requires [Node.js]().*
 Note that an empty line is required immediately before and after the file path.
 
 - If the `./` prefix is used, then the file path is resolved relative to the current Markdown file.
