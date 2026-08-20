@@ -280,7 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
       }
 
-  
+  const toggleIcon = isExpanded ? '' : '';
+      const badgeClass = isExpanded ? 'badge discipline-badge is-open' : 'badge discipline-badge';
 
       return `
         <article class="filterable" data-id="${article.id}">
