@@ -4,24 +4,7 @@
 
 
 
-Opening this module will not give you more information, at this point in time.  
-
-Opening this module will not give you more information, at this point in time. 
-
-Opening this module will not give you more information, at this point in time. 
-
-Opening this module will not give you more information, at this point in time. 
-
-Opening this module will not give you more information, at this point in time. 
-
-
-Opening this module will not give you more information, at this point in time. 
-Opening this module will not give you more information, at this point in time. 
-
-
-Opening this module will not give you more information, at this point in time. 
-Opening this module will not give you more information, at this point in time. 
-Opening this module will not give you more information, at this point in time. 
+just checking wether a video with a splash image could function ok - at it does. first link is image, second video, above.  
 
 ##Test
 
