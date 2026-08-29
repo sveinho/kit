@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- FAIR Signposting: Link to the external JSON-LD metadata -->
+  <link rel="describedby" 
+        type="application/ld+json" 
+        href="./metadata.jsonld">
+    
+    <title>Support kit modules</title>
+    
+    <!-- Link to your custom stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- 1. Last inn kjernebiblioteket for Markdown -->
+   <script src="markdown-it.min.js"></script>
+
+</head>
+<body>
+    <!-- Main Navigation Bar -->
+    <header class="main-header">
+        <div class="header-container">
+            <h1>Support kit</h1>
+            <p>Choose a path and learn new skills module-by-module.</p>
+        </div>
+    </header>
+
+    <!-- NYTT: Omgivende layout-beholder -->
+    <div class="layout-container">
+        
+        <!-- Endret fra <section> til <aside> for bedre semantikk som sidemeny -->
+        <aside class="control-panel">
+            
+            <!-- 1. Role Selection Button Row (Learning Paths) -->
+            <div class="filter-buttons-wrapper">
+                <button class="filter-btn active" data-track="all">Info (All Tracks)</button>
+                <button class="filter-btn btn-researcher" data-track="researchers">Researchers</button>
+                <button class="filter-btn btn-manager" data-track="managers">Managers</button>
+                <button class="filter-btn btn-trainer" data-track="trainers">Trainers</button>
+            </div>
+
+            <!-- 2. Search Field -->
+            <div class="search-wrapper" style="margin-top: 15px;">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search for a relevant keyword..." 
+                    aria-label="Search learning modules"
+                >
+                <button id="resetSearchBtn" class="invisible" title="Clear search filters">✕</button>
+            </div>
+  
+               <details class="tag-cloud-wrapper">
+  <summary class="tag-cloud-trigger">Show/ hide tag cloud</summary>
+  <div class="global-tag-cloud">
+  <div id="globalTagCloud" class="global-tag-cloud"></div>
+  </div>
+  </details>
+        </aside>
+  
+        <!-- Core Dynamic Content Section -->
+        <main class="content-container">
+      
+             <!-- Status indicator text -->
+            <div id="searchCounter" class="search-counter">Loading track registry index...</div>
+           
+           
+              
+            <!-- Target container where app.js will inject the module cards -->
+            <div id="articlesContainer" class="modules-grid"></div>
+
+            <!-- Fallback view shown only when zero query results return -->
+            <div id="noResults" class="hidden feedback-box">
+                <h3>No matching modules found</h3>
+                <p>Try adjusting your search terms, clicking another tag, or clearing the filter to see all structured tracks.</p>
+            </div>
+
+            <!-- Pagination Controls wrapper -->
+            <div id="loadMoreWrapper" class="hidden pagination-bar">
+                <button id="loadMoreBtn" class="primary-btn">Load More Modules ↓</button>
+            </div>
+
+            
+        </main>
+
+    </div> <!-- Slutt på layout-container -->
+
+    <!-- Global Footer -->
+    <footer class="main-footer">
+        <!-- <p>work in progress..</p> -->
+    </footer>
+
+    <!-- Load your combined JavaScript file containing Part 1, 2 and 3 -->
+     <script src="app.js"></script>
+</body>
+</html>
