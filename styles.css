@@ -95,27 +95,41 @@ button {
 }
 
 /* ==========================================================================
-   3. HEADER ARCHITECTURE
+   3. HEADER ARCHITECTURE (COMPACT & STICKY)
    ========================================================================== */
 .main-header {
   background: #fff;
   color: #0d2173;
-  padding: 50px 20px;
-  text-align: center;
+  padding: 16px 20px; /* Redusert fra 50px til 16px for et moderne, kompakt uttrykk */
   box-shadow: var(--shadow-sm);
+  
+  /* Låser headeren til toppen av skjermen */
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Sørger for at headeren alltid ligger *over* artiklene når de scroller */
+}
+
+/* Sentrerer innholdet i headeren på linje med resten av nettstedet (maks 1400px wide) */
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Flytter teksten til venstre for en renere "app-følelse" */
 }
 
 .header-container h1 {
-  font-size: 2.5rem;
+  font-size: 1.6rem; /* Krympet fra 2.5rem for å spare verdifull skjermplass */
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
 }
 
 .header-container p {
   color: #4a5568;
-  font-size: 1.15rem;
+  font-size: 0.95rem; /* Krympet fra 1.15rem */
 }
+
 /* ==========================================================================
    4. SEARCH FACET
    ========================================================================== */
