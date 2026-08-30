@@ -1,5 +1,5 @@
 /**
- * Kit Learning App - Fully Consolidated & Repaired
+ * Kit Learning App - Part 1: Setup & Initialization
  */
 
 const SELECTORS = {
@@ -143,7 +143,9 @@ class KitApp {
     }
     history.pushState({}, '', url);
   }
-
+  /**
+   * Kit Learning App - Part 2: Routing, Loading & Filtering Logic
+   */
   #applyRoute() {
     const url = new URL(location.href);
     const id = url.searchParams.get('id');
@@ -255,7 +257,9 @@ class KitApp {
     if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
     this.#render();
   }
-
+  /**
+   * Kit Learning App - Part 3: UI Rendering & HTML Generation
+   */
   #render() {
     const { articlesContainer, loadMoreWrapper } = this.#refs;
     const { filtered, displayed } = this.#state;
@@ -313,4 +317,312 @@ class KitApp {
       expandedHtml = `
         <div class="full-content">
           <div class="markdown-body">${body}</div>
-${nextBtn}Copy share link 🔗Close Module ✕`;}const badgeClass = badge discipline-badge${isExpanded ? ' is-open' : ''};return <article class="filterable" data-id="${article.id}"> <div class="article-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;"> <h2 class="article-title-clickable" style="cursor:pointer;margin:0;">${titleHtml}</h2> <button class="${badgeClass}" data-id="${article.id}" style="cursor:pointer;flex-shrink:0;white-space:nowrap;"> ${this.#escapeHtml(article.discipline || 'Unknown')} </button> </div> <p class="abstract-text">${abstractHtml}</p> ${expandedHtml} <div class="article-tags-bottom">${tagsHtml}</div> </article>;}#renderGlobalTagCloud() {const cloud = this.#refs.globalTagCloud;if (!cloud) return;const tags = new Set();this.#state.all.forEach((a) => a.tags?.forEach((t) => tags.add(t.trim())));if (tags.size === 0) {cloud.innerHTML = '';return;}cloud.innerHTML = Array.from(tags).sort().map((tag) => {const active = tag === this.#state.tagFilter ? ' active' : '';return <button class="global-tag-btn${active}" data-tag="${tag}">#${this.#escapeHtml(tag)}</button>;}).join(' ');}#updateSearchUI() {const { searchCounter, noResults } = this.#refs;const { filtered, query, tagFilter } = this.#state;const isSearching = query.length > 0;const tagNotice = tagFilter ?  filtered by #${tagFilter} : '';if (searchCounter) {searchCounter.textContent = isSearching? Found ${filtered.length} matching steps sorted by relevance${tagNotice}: Track index loaded. Total modules available: ${filtered.length}${tagNotice};}noResults?.classList.toggle('hidden', filtered.length > 0);}#onSearch(raw) {this.#state.query = raw.trim().toLowerCase();this.#syncResetButton();this.#filter(true);}#setTrackFilter(track, activeBtn) {this.#state.trackFilter = track;this._filterButtons.forEach((b) => b.classList.toggle('active', b === activeBtn));const activeArticle = this.#state.activeId? this.#state.all.find((a) => a.id === this.#state.activeId): null;const targetParams = { track };if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;if (activeArticle && track !== 'all' && activeArticle.track !== track) {this.#state.activeId = null;this.#syncUrl(targetParams);} else {if (this.#state.activeId) targetParams.id = this.#state.activeId;this.#syncUrl(targetParams);}this.#filter(true);window.scrollTo({ top: 0, behavior: 'smooth' });}#toggleTag(tag) {const isActive = this.#state.tagFilter === tag;this.#state.tagFilter = isActive ? null : tag;const targetParams = {};if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {targetParams.track = this.#state.trackFilter;}if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;if (this.#state.activeId) targetParams.id = this.#state.activeId;this.#syncUrl(targetParams);this.#syncResetButton();this.#renderGlobalTagCloud();this.#filter(true);}async #selectModule(id, hash = '') {if (this.#state.activeId === id) {this.#closeActive();return;}this.#state.activeId = id;const targetParams = { id };if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {targetParams.track = this.#state.trackFilter;}if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;this.#syncUrl(targetParams, hash);this.#filter(false);const article = this.#state.all.find((a) => a.id === id);if (article && !article.markdownContent) {await this.#loadMarkdown(article);}this.#scrollToAnchor(hash || location.hash);}#closeActive() {this.#state.activeId = null;const targetParams = {};if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {targetParams.track = this.#state.trackFilter;}if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;this.#syncUrl(targetParams);this.#filter(false);}#reset() {this.#state.query = '';if (this.#refs.searchInput) this.#refs.searchInput.value = '';this.#state.activeId = null;this.#state.tagFilter = null;const targetParams = {};if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {targetParams.track = this.#state.trackFilter;}this.#syncUrl(targetParams);this.#refs.resetBtn?.classList.add('invisible');this.#renderGlobalTagCloud();this.#filter(true);}async #copyShareLink(id, btn) {try {await navigator.clipboard.writeText(CONFIG.shareUrl(id));const original = btn.textContent;btn.textContent = 'Link copied! ✔';btn.classList.add('copied');setTimeout(() => {btn.textContent = original;btn.classList.remove('copied');}, 2000);} catch (err) {console.error('Clipboard failed:', err);}}#onArticleClick(e) {const tagBtn = e.target.closest('.tag-click-btn');if (tagBtn) {this.#toggleTag(tagBtn.dataset.tag);return;}const artEl = e.target.closest('.filterable');const artId = artEl?.dataset.id;if (e.target.closest('.article-title-clickable') || e.target.closest('.discipline-badge')) {if (artId) this.#selectModule(artId);return;}const nextBtn = e.target.closest('.next-step-btn');if (nextBtn) {this.#selectModule(nextBtn.dataset.nextId);return;}const shareBtn = e.target.closest('.share-btn');if (shareBtn) {this.#copyShareLink(shareBtn.dataset.id, shareBtn);return;}const closeBtn = e.target.closest('.close-article-btn');if (closeBtn) {this.#closeActive();return;}const a = e.target.closest('a[href]');if (a) this.#handleInternalLink(a, e);}#handleInternalLink(a, event) {const href = a.getAttribute('href') || '';if (href.startsWith('#')) {event.preventDefault();const targetParams = { id: this.#state.activeId };if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {targetParams.track = this.#state.trackFilter;}if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;this.#syncUrl(targetParams, href);this.#scrollToAnchor(href);return;}let url;try {url = new URL(href, location.href);} catch {return;}const id = url.searchParams.get('id');const hash = url.hash || '';const isSamePage = url.pathname === location.pathname;if (isSamePage && id) {event.preventDefault();this.#selectModule(id, hash);return;}if (url.pathname.endsWith('.md')) {event.preventDefault();const fileId = url.pathname.split('/').pop().replace(/.md$/, '');this.#selectModule(fileId, hash);return;}}#scrollToAnchor(rawHash = '') {const hash = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;const expanded = this.#refs.articlesContainer?.querySelector([data-id="${this.#state.activeId}"]);if (!expanded) return;if (hash) {let target = document.getElementById(hash);if (!target && this.#state.activeId) {target = document.getElementById(${this.#state.activeId}--${hash});}if (target && expanded.contains(target)) {target.scrollIntoView({ behavior: 'smooth', block: 'start' });return;}}expanded.scrollIntoView({ behavior: 'smooth', block: 'start' });}#getMarkdownRenderer() {if (this.#md) return this.#md;// La til en trygg sjekk mot vindu-objektet for å hindre asynkron krasj ved tidlig oppstartconst ctor = typeof window.markdownit === 'function' ? window.markdownit : null;this.#md = ctor ? ctor({ html: true, linkify: true }) : null;return this.#md;}#escapeHtml(str) {const div = document.createElement('div');div.textContent = String(str);return div.innerHTML;}#highlight(text, words) {if (!words.length || !text) return this.#escapeHtml(text);const safeWords = words.map((w) => w.replace(/^./, '')).filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[]\]/g, '$&'));if (!safeWords.length) return this.#escapeHtml(text);const re = new RegExp((${safeWords.join('|')}), 'gi');return this.#escapeHtml(text).replace(re, '$1');}#syncResetButton() {this.#refs.resetBtn?.classList.toggle('invisible', !(this.#state.query || this.#state.tagFilter));}}document.addEventListener('DOMContentLoaded', () => {const app = new KitApp();app.init();});
+          <div class="learning-path-actions">
+            ${nextBtn}
+            <button class="share-btn" data-id="${article.id}">Copy share link 🔗</button>
+            <button class="close-article-btn">Close Module ✕</button>
+          </div>
+        </div>
+      `;
+    }
+
+    const badgeClass = `badge discipline-badge${isExpanded ? ' is-open' : ''}`;
+
+    return `
+      <article class="filterable" data-id="${article.id}">
+        <div class="article-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;">
+          <h2 class="article-title-clickable" style="cursor:pointer;margin:0;">${titleHtml}</h2>
+          <button class="${badgeClass}" data-id="${article.id}" style="cursor:pointer;flex-shrink:0;white-space:nowrap;">
+            ${this.#escapeHtml(article.discipline || 'Unknown')}
+          </button>
+        </div>
+        <p class="abstract-text">${abstractHtml}</p>
+        ${expandedHtml}
+        <div class="article-tags-bottom">${tagsHtml}</div>
+      </article>
+    `;
+  }
+
+  #renderGlobalTagCloud() {
+    const cloud = this.#refs.globalTagCloud;
+    if (!cloud) return;
+
+    const tags = new Set();
+    this.#state.all.forEach((a) => a.tags?.forEach((t) => tags.add(t.trim())));
+    if (tags.size === 0) {
+      cloud.innerHTML = '';
+      return;
+    }
+
+    cloud.innerHTML = Array.from(tags)
+      .sort()
+      .map((tag) => {
+        const active = tag === this.#state.tagFilter ? ' active' : '';
+        return `<button class="global-tag-btn${active}" data-tag="${tag}">#${this.#escapeHtml(tag)}</button>`;
+      })
+      .join(' ');
+  }
+
+  #updateSearchUI() {
+    const { searchCounter, noResults } = this.#refs;
+    const { filtered, query, tagFilter } = this.#state;
+    const isSearching = query.length > 0;
+    const tagNotice = tagFilter ? ` filtered by #${tagFilter}` : '';
+
+    if (searchCounter) {
+      searchCounter.textContent = isSearching
+        ? `Found ${filtered.length} matching steps sorted by relevance${tagNotice}`
+        : `Track index loaded. Total modules available: ${filtered.length}${tagNotice}`;
+    }
+    noResults?.classList.toggle('hidden', filtered.length > 0);
+  }
+  /**
+   * Kit Learning App - Part 4: Interaction Handlers, Utilities & DOM Ready
+   */
+  #onSearch(raw) {
+    this.#state.query = raw.trim().toLowerCase();
+    this.#syncResetButton();
+    this.#filter(true);
+  }
+
+  #setTrackFilter(track, activeBtn) {
+    this.#state.trackFilter = track;
+    this._filterButtons.forEach((b) => b.classList.toggle('active', b === activeBtn));
+    
+    const activeArticle = this.#state.activeId
+      ? this.#state.all.find((a) => a.id === this.#state.activeId)
+      : null;
+      
+    const targetParams = { track };
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+
+    if (activeArticle && track !== 'all' && activeArticle.track !== track) {
+      this.#state.activeId = null;
+      this.#syncUrl(targetParams);
+    } else {
+      if (this.#state.activeId) targetParams.id = this.#state.activeId;
+      this.#syncUrl(targetParams);
+    }
+    
+    this.#filter(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  #toggleTag(tag) {
+    const isActive = this.#state.tagFilter === tag;
+    this.#state.tagFilter = isActive ? null : tag;
+    
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    if (this.#state.activeId) targetParams.id = this.#state.activeId;
+    
+    this.#syncUrl(targetParams);
+    this.#syncResetButton();
+    this.#renderGlobalTagCloud();
+    this.#filter(true);
+  }
+
+  async #selectModule(id, hash = '') {
+    if (this.#state.activeId === id) {
+      this.#closeActive();
+      return;
+    }
+    this.#state.activeId = id;
+    
+    const targetParams = { id };
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    
+    this.#syncUrl(targetParams, hash);
+    this.#filter(false);
+
+    const article = this.#state.all.find((a) => a.id === id);
+    if (article && !article.markdownContent) {
+      await this.#loadMarkdown(article);
+    }
+    this.#scrollToAnchor(hash || location.hash);
+  }
+
+  #closeActive() {
+    this.#state.activeId = null;
+    
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    
+    this.#syncUrl(targetParams);
+    this.#filter(false);
+  }
+
+  #reset() {
+    this.#state.query = '';
+    if (this.#refs.searchInput) this.#refs.searchInput.value = '';
+    this.#state.activeId = null;
+    this.#state.tagFilter = null;
+    
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    
+    this.#syncUrl(targetParams);
+    this.#refs.resetBtn?.classList.add('invisible');
+    this.#renderGlobalTagCloud();
+    this.#filter(true);
+  }
+
+  async #copyShareLink(id, btn) {
+    try {
+      await navigator.clipboard.writeText(CONFIG.shareUrl(id));
+      const original = btn.textContent;
+      btn.textContent = 'Link copied! ✔';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (err) {
+      console.error('Clipboard failed:', err);
+    }
+  }
+
+  #onArticleClick(e) {
+    const tagBtn = e.target.closest('.tag-click-btn');
+    if (tagBtn) {
+      this.#toggleTag(tagBtn.dataset.tag);
+      return;
+    }
+
+    const artEl = e.target.closest('.filterable');
+    const artId = artEl?.dataset.id;
+    if (e.target.closest('.article-title-clickable') || e.target.closest('.discipline-badge')) {
+      if (artId) this.#selectModule(artId);
+      return;
+    }
+
+    const nextBtn = e.target.closest('.next-step-btn');
+    if (nextBtn) {
+      this.#selectModule(nextBtn.dataset.nextId);
+      return;
+    }
+
+    const shareBtn = e.target.closest('.share-btn');
+    if (shareBtn) {
+      this.#copyShareLink(shareBtn.dataset.id, shareBtn);
+      return;
+    }
+
+    const closeBtn = e.target.closest('.close-article-btn');
+    if (closeBtn) {
+      this.#closeActive();
+      return;
+    }
+
+    const a = e.target.closest('a[href]');
+    if (a) this.#handleInternalLink(a, e);
+  }
+
+  #handleInternalLink(a, event) {
+    const href = a.getAttribute('href') || '';
+
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      
+      const targetParams = { id: this.#state.activeId };
+      if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+        targetParams.track = this.#state.trackFilter;
+      }
+      if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+      
+      this.#syncUrl(targetParams, href);
+      this.#scrollToAnchor(href);
+      return;
+    }
+
+    let url;
+    try {
+      url = new URL(href, location.href);
+    } catch {
+      return;
+    }
+
+    const id = url.searchParams.get('id');
+    const hash = url.hash || '';
+    const isSamePage = url.pathname === location.pathname;
+
+    if (isSamePage && id) {
+      event.preventDefault();
+      this.#selectModule(id, hash);
+      return;
+    }
+
+    if (url.pathname.endsWith('.md')) {
+      event.preventDefault();
+      const fileId = url.pathname.split('/').pop().replace(/\.md$/, '');
+      this.#selectModule(fileId, hash);
+      return;
+    }
+  }
+
+  #scrollToAnchor(rawHash = '') {
+    const hash = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+    const expanded = this.#refs.articlesContainer?.querySelector(
+      `[data-id="${this.#state.activeId}"]`
+    );
+    if (!expanded) return;
+
+    if (hash) {
+      let target = document.getElementById(hash);
+      if (!target && this.#state.activeId) {
+        target = document.getElementById(`${this.#state.activeId}--${hash}`);
+      }
+      if (target && expanded.contains(target)) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+
+    expanded.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  #getMarkdownRenderer() {
+    if (this.#md) return this.#md;
+    const ctor = typeof window.markdownit === 'function' ? window.markdownit : null;
+    this.#md = ctor ? ctor({ html: true, linkify: true }) : null;
+    return this.#md;
+  }
+
+  #escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  #highlight(text, words) {
+    if (!words.length || !text) return this.#escapeHtml(text);
+    const safeWords = words
+      .map((w) => w.replace(/^\./, ''))
+      .filter(Boolean)
+      .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!safeWords.length) return this.#escapeHtml(text);
+
+    const re = new RegExp(`(${safeWords.join('|')})`, 'gi');
+    return this.#escapeHtml(text).replace(re, '<mark>$1</mark>');
+  }
+
+  #syncResetButton() {
+    this.#refs.resetBtn?.classList.toggle('invisible', !(this.#state.query || this.#state.tagFilter));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const app = new KitApp();
+  app.init();
+});
