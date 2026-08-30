@@ -603,39 +603,41 @@ mark {
   animation: fadeInContent 0.25s var(--ease-out) forwards;
   will-change: opacity, transform;
 }
-.pagination-bar
-{
-  background: #ebfbee;
-  color: #2b8a3e;
-  border: 1px solid #c3fae8;
-  padding: 10px 20px;
+/* Beholderen for Load More-knappen i bunnen av hovedinnholdet */
+.pagination-bar {
+  display: flex;
+  justify-content: center; /* Sørger for at knappen blir liggende midt på skjermen sidelengs */
+  align-items: center;
+  width: 100%;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+/* Selve "Load More Modules"-knappen */
+.primary-btn {
+  background: #f0f4ff; /* En svært lys, behagelig blåfarge som matcher det aktive søkefeltet */
+  color: var(--color-tag-active); /* Mørkeblå tekst */
+  border: 1px solid #bfdbfe; /* Tynn lys blå ramme */
+  padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
+  
+  /* Fast bredde slik du har på de andre handlingsknappene */
   width: 240px; 
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
 }
-.primary-btn
-{
- background: #ebfbee;
-  color: #2b8a3e;
-  border: 1px solid #c3fae8;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  width: 240px; 
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
+
+/* Hover-effekt når brukeren holder musa over knappen */
+.primary-btn:hover {
+  background: #dbeafe; /* Litt dypere pastellblå ved hover */
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
