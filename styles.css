@@ -436,7 +436,7 @@ article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--b
 /* Gjøre abstract-teksten tydeligere, helt svart og litt større */
 .abstract-text {
   color: #000000;       /* Endret fra var(--text-muted) til ren, dyp svart */
-  font-size: 1.05rem;   /* Økt størrelsen litt fra standard (0.95rem) for bedre blikkfang */
+  font-size: 0.90rem;   /* Økt størrelsen litt fra standard (0.95rem) for bedre blikkfang */
   font-weight: 400;     /* Beholder normal vekt, men den sorte fargen gjør den fyldigere */
   margin-bottom: 16px;
   line-height: 1.6;     /* God linjeavstand sikrer at den forblir lettlest */
