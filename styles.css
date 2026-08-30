@@ -603,3 +603,29 @@ mark {
   animation: fadeInContent 0.25s var(--ease-out) forwards;
   will-change: opacity, transform;
 }
+.pagination-bar
+{
+  background: #fff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
+}
+.primary-btn
+{
+  background: #fff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
+}
