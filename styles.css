@@ -136,6 +136,11 @@ button {
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
+#searchInput.active-search {
+  background-color: #f0f4ff; /* En svært lys og behagelig blåfarge */
+  border-color: var(--color-tag-active); /* Rammen matcher den blå temafargen din */
+}
+
 #searchInput:focus {
   outline: none;
   border-color: var(--color-tag-active);
