@@ -436,8 +436,10 @@ article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--b
 mark {
   background: #fef531;
   color: #92400e;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 0;           /* Fjerner all ekstra indre luft som dytter teksten unna */
+  margin: 0;            /* Sikrer at det ikke blir glipper til resten av ordet */
+  border-radius: 2px;   /* Beholder en bitteliten pen avrunding på hjørnene */
+  display: inline;      /* Tvinger elementet til å flyte 100 % i ett med bokstavene rundt */
 }
 
 /* ==========================================================================
