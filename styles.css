@@ -11,11 +11,10 @@
   --text-muted: #718096;
   --border-color: #e2e8f0;
 
-  /* Theme Role Colors - Updated Palette */
-  --bg-info-badge: #f0447d;       /* Den rosa fargen flyttet til Information */
-  --bg-researcher-badge: #1e40af; /* Ny, stødig kongeblå for Researchers */
-  --bg-manager-badge: #edac00;    /* Beholdes */
-  --bg-trainer-badge: #15949e;    /* Beholdes */
+  /* Theme Role Colors */
+  --bg-researcher-badge: #f0447d;
+  --bg-manager-badge: #edac00;
+  --bg-trainer-badge: #15949e;
 
   /* Switch & Tag Configs */
   --color-tag-active: #0d2173;
@@ -72,10 +71,9 @@ button {
   padding: 30px 20px;
 }
 
-/* Oppdater denne i kapittel 2 (SYSTEM LAYOUT STRUCTURE) */
 .control-panel {
   position: sticky;
-  top: 104px; /* Økt litt fra 94px for å gi en mer behagelig luft (10px ekstra) under headeren */
+  top: 20px;
   height: fit-content;
   width: 100%;
 }
@@ -96,41 +94,27 @@ button {
 }
 
 /* ==========================================================================
-   3. HEADER ARCHITECTURE (COMPACT & STICKY)
+   3. HEADER ARCHITECTURE
    ========================================================================== */
 .main-header {
   background: #fff;
   color: #0d2173;
-  padding: 16px 20px; /* Redusert fra 50px til 16px for et moderne, kompakt uttrykk */
+  padding: 50px 20px;
+  text-align: center;
   box-shadow: var(--shadow-sm);
-  
-  /* Låser headeren til toppen av skjermen */
-  position: sticky;
-  top: 0;
-  z-index: 100; /* Sørger for at headeren alltid ligger *over* artiklene når de scroller */
-}
-
-/* Sentrerer innholdet i headeren på linje med resten av nettstedet (maks 1400px wide) */
-.header-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Flytter teksten til venstre for en renere "app-følelse" */
 }
 
 .header-container h1 {
-  font-size: 1.6rem; /* Krympet fra 2.5rem for å spare verdifull skjermplass */
+  font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: 2px;
+  margin-bottom: 10px;
 }
 
 .header-container p {
   color: #4a5568;
-  font-size: 0.95rem; /* Krympet fra 1.15rem */
+  font-size: 1.15rem;
 }
-
 /* ==========================================================================
    4. SEARCH FACET
    ========================================================================== */
@@ -216,15 +200,15 @@ button {
 
 /* Theme Mapped Dynamic Active States - Matched to data-track */
 .filter-btn[data-track="all"].active {
-  background: var(--bg-info-badge); /* Information-knappen blir nå rosa når aktiv */
+  background: var(--text-main);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
+  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
 }
 
 .filter-btn[data-track="researchers"].active {
-  background: var(--bg-researcher-badge); /* Blir kongeblå når aktiv */
+  background: var(--bg-researcher-badge);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
 }
 
 .filter-btn[data-track="managers"].active {
@@ -238,7 +222,6 @@ button {
   color: #fff;
   box-shadow: 0 4px 12px rgba(21, 148, 158, 0.25);
 }
-
 
 /* ==========================================================================
    6. VISIBILITY TOGGLE SWITCH SYSTEM
@@ -374,7 +357,6 @@ article.filterable {
   padding: 24px;
   cursor: text;
   box-shadow: var(--shadow-sm);
-   scroll-margin-top: 90px; 
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
@@ -442,11 +424,6 @@ article.filterable:hover {
 }
 
 /* Role Theme Injection Classes */
-/* Sørger for at Information-modulen (navigating-kit) får den rosa fargen */
-article.filterable[data-id*="navigating-kit"] { border-left-color: var(--bg-info-badge); }
-article.filterable[data-id*="navigating-kit"] .discipline-badge { background: var(--bg-info-badge); color: #fff; }
-
-/* Researchers bruker nå den nye, stødige blåfargen */
 article.filterable[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge); }
 article.filterable[data-id*="-researchers"] .discipline-badge { background: var(--bg-researcher-badge); color: #fff; }
 
@@ -455,7 +432,6 @@ article.filterable[data-id*="-managers"] .discipline-badge { background: var(--b
 
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
-
 
 /* Gjøre abstract-teksten tydeligere, helt svart og litt større */
 .abstract-text {
