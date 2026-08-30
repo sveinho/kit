@@ -487,3 +487,22 @@ article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--b
   margin-bottom: 1.25rem;
   border: 1px solid var(--border-color);
 }
+/* ==========================================================================
+   11. SMOOTH CONTENT EXPANSION ANIMATION
+   ========================================================================== */
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(4px); /* Elementet løfter seg ørlite opp idet det tones inn */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Koble animasjonen på innholdsbeholderen når modulen åpnes */
+.full-content {
+  animation: fadeInContent 0.25s var(--ease-out) forwards;
+  will-change: opacity, transform;
+}
