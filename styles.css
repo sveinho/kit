@@ -72,9 +72,10 @@ button {
   padding: 30px 20px;
 }
 
+/* Oppdater denne i kapittel 2 (SYSTEM LAYOUT STRUCTURE) */
 .control-panel {
   position: sticky;
-  top: 94px; /* Endret fra 20px (74px headerhøyde + 20px ekstra luft under) */
+  top: 104px; /* Økt litt fra 94px for å gi en mer behagelig luft (10px ekstra) under headeren */
   height: fit-content;
   width: 100%;
 }
@@ -373,6 +374,7 @@ article.filterable {
   padding: 24px;
   cursor: text;
   box-shadow: var(--shadow-sm);
+   scroll-margin-top: 90px; 
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
