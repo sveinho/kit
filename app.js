@@ -634,9 +634,21 @@ class KitApp {
     return this.#escapeHtml(text).replace(re, '<mark>$1</mark>');
   }
 
-  #syncResetButton() {
-    this.#refs.resetBtn?.classList.toggle('invisible', !(this.#state.query || this.#state.tagFilter));
+   #syncResetButton() {
+    const { searchInput, resetBtn } = this.#refs;
+    
+    // Sjekk om det faktisk står noe i input-feltet akkurat nå
+    const hasText = searchInput && searchInput.value.trim().length > 0;
+    
+    // Vis eller skjul slettekrysset (✕)
+    resetBtn?.classList.toggle('invisible', !hasText);
+    
+    // Legg til eller fjern fargemarkeringen på selve søkefeltet
+    if (searchInput) {
+      searchInput.classList.toggle('active-search', hasText);
+    }
   }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
