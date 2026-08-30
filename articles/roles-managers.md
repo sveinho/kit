@@ -125,7 +125,7 @@ Whether to render a Table of Contents.
 
 - Defaults to `true`
 
-## `"sections"`
+## `"ectionss"`
 
 (*`boolean`*)
 
