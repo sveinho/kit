@@ -143,9 +143,11 @@ class KitApp {
     }
     history.pushState({}, '', url);
   }
+  
   /**
    * Kit Learning App - Part 2: Routing, Loading & Filtering Logic
    */
+  
   #applyRoute() {
     const url = new URL(location.href);
     const id = url.searchParams.get('id');
@@ -257,9 +259,11 @@ class KitApp {
     if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
     this.#render();
   }
+  
   /**
    * Kit Learning App - Part 3: UI Rendering & HTML Generation
    */
+  
   #render() {
     const { articlesContainer, loadMoreWrapper } = this.#refs;
     const { filtered, displayed } = this.#state;
@@ -376,9 +380,11 @@ class KitApp {
     }
     noResults?.classList.toggle('hidden', filtered.length > 0);
   }
+  
   /**
    * Kit Learning App - Part 4: Interaction Handlers, Utilities & DOM Ready
    */
+  
   #onSearch(raw) {
     const cleanQuery = raw.trim().toLowerCase();
     
