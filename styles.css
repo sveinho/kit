@@ -11,10 +11,11 @@
   --text-muted: #718096;
   --border-color: #e2e8f0;
 
-  /* Theme Role Colors */
-  --bg-researcher-badge: #f0447d;
-  --bg-manager-badge: #edac00;
-  --bg-trainer-badge: #15949e;
+  /* Theme Role Colors - Updated Palette */
+  --bg-info-badge: #f0447d;       /* Den rosa fargen flyttet til Information */
+  --bg-researcher-badge: #1e40af; /* Ny, stødig kongeblå for Researchers */
+  --bg-manager-badge: #edac00;    /* Beholdes */
+  --bg-trainer-badge: #15949e;    /* Beholdes */
 
   /* Switch & Tag Configs */
   --color-tag-active: #0d2173;
@@ -200,15 +201,15 @@ button {
 
 /* Theme Mapped Dynamic Active States - Matched to data-track */
 .filter-btn[data-track="all"].active {
-  background: var(--text-main);
+  background: var(--bg-info-badge); /* Information-knappen blir nå rosa når aktiv */
   color: #fff;
-  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
+  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
 }
 
 .filter-btn[data-track="researchers"].active {
-  background: var(--bg-researcher-badge);
+  background: var(--bg-researcher-badge); /* Blir kongeblå når aktiv */
   color: #fff;
-  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
 }
 
 .filter-btn[data-track="managers"].active {
@@ -222,6 +223,7 @@ button {
   color: #fff;
   box-shadow: 0 4px 12px rgba(21, 148, 158, 0.25);
 }
+
 
 /* ==========================================================================
    6. VISIBILITY TOGGLE SWITCH SYSTEM
@@ -424,6 +426,11 @@ article.filterable:hover {
 }
 
 /* Role Theme Injection Classes */
+/* Sørger for at Information-modulen (navigating-kit) får den rosa fargen */
+article.filterable[data-id*="navigating-kit"] { border-left-color: var(--bg-info-badge); }
+article.filterable[data-id*="navigating-kit"] .discipline-badge { background: var(--bg-info-badge); color: #fff; }
+
+/* Researchers bruker nå den nye, stødige blåfargen */
 article.filterable[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge); }
 article.filterable[data-id*="-researchers"] .discipline-badge { background: var(--bg-researcher-badge); color: #fff; }
 
@@ -432,6 +439,7 @@ article.filterable[data-id*="-managers"] .discipline-badge { background: var(--b
 
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
+
 
 /* Gjøre abstract-teksten tydeligere, helt svart og litt større */
 .abstract-text {
