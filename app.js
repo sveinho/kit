@@ -306,7 +306,7 @@ class KitApp {
     let expandedHtml = '';
     if (isExpanded) {
       const md = this.#getMarkdownRenderer();
-      const body = md && article.markdownContent ? md.render(article.markdownContent) : 'Loading…';
+      const body = md && article.markdownContent ? md.render(article.markdownContent) : '';
       const next = this.#state.all.find(
         (a) => a.track === article.track && a.order === (article.order + 1)
       );
