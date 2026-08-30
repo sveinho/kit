@@ -428,7 +428,7 @@ article.filterable[data-id*="-managers"] .discipline-badge { background: var(--b
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
 
-.abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}/* ==========================================================================9. ACTIONS AREA & FOOTER UTILITIES========================================================================== */.learning-path-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border-color);display: flex;gap: 12px;flex-wrap: wrap;}.next-step-btn {background: #27ae60;color: #fff;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;font-size: 0.9rem;cursor: pointer;box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);transition: background-color 0.2s, transform 0.2s;}.next-step-btn:hover {background: #219653;transform: translateY(-1px);}
+.abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}
 
 /* ==========================================================================
    9. ACTIONS AREA & FOOTER UTILITIES
