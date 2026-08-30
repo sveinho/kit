@@ -1,4 +1,4 @@
-#### Sections for training on TopicX
+#### Sections in this module
 
 [Tutorial](#tutorial) | [How-to](#how-to) | [Reference](#reference) | [Explanation](#explanation) 
 
