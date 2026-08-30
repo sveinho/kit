@@ -431,6 +431,66 @@ article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--b
 .abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}/* ==========================================================================9. ACTIONS AREA & FOOTER UTILITIES========================================================================== */.learning-path-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border-color);display: flex;gap: 12px;flex-wrap: wrap;}.next-step-btn {background: #27ae60;color: #fff;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;font-size: 0.9rem;cursor: pointer;box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);transition: background-color 0.2s, transform 0.2s;}.next-step-btn:hover {background: #219653;transform: translateY(-1px);}
 
 /* ==========================================================================
+   9. ACTIONS AREA & FOOTER UTILITIES
+   ========================================================================== */
+/* Beholderen for knappene inni den åpne modulen (Next, Copy link, Close) */
+.learning-path-actions {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 12px; /* Gir nøyaktig 12px luft mellom hver knapp sidelengs */
+  flex-wrap: wrap; /* Sørger for at knapper flyter pent til neste linje på mobil */
+  align-items: center;
+}
+
+/* Felles styling for sekundære handlingsknapper (Share og Close) */
+.share-btn,
+.close-article-btn {
+  background: #fff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
+}
+
+.share-btn:hover,
+.close-article-btn:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Spesifikk farge for lukkeknappen hvis du vil ha den tydeligere */
+.close-article-btn {
+  color: #e53e3e; /* Rød tekst */
+  border-color: #fed7d7;
+}
+.close-article-btn:hover {
+  background: #fff5f5;
+}
+
+/* Beholderen for taggene som ligger helt i bunnen av artikkel-kortet */
+.article-tags-bottom {
+  margin-top: 20px; /* Gir et solid, luftig rom opp til knappene/innholdet over */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* Luft mellom hver enkelt tag */
+  padding-top: 8px;
+}
+
+/* Sørger for at kulepunkter/tager inni artikler har riktig standard størrelse */
+.article-tags-bottom .badge {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+}
+
+/* ==========================================================================
    10. MARKDOWN TYPOGRAPHY & SPACING RESTORATION
    ========================================================================== */
 .markdown-body {
