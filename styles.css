@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. GLOBAL VARIABLES & RESET
+   1. GLOBAL VARIABLES, RESETS & BASE STYLES
    ========================================================================== */
 :root {
   --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -11,11 +11,17 @@
   --text-muted: #718096;
   --border-color: #e2e8f0;
 
+  /* Theme Role Colors */
   --bg-researcher-badge: #f0447d;
   --bg-manager-badge: #edac00;
   --bg-trainer-badge: #15949e;
 
+  /* Switch & Tag Configs */
   --color-tag-active: #0d2173;
+  --bg-switch-off: #cbd5e0;
+  --bg-switch-on: #0d2173;
+  
+  /* System Tokens */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -43,6 +49,7 @@ button {
   font-family: inherit;
 }
 
+/* Visibility Utilities */
 .hidden {
   display: none !important;
 }
@@ -52,7 +59,9 @@ button {
   pointer-events: none;
 }
 
-/* Layout --------------------------------------------------------------- */
+/* ==========================================================================
+   2. SYSTEM LAYOUT STRUCTURE
+   ========================================================================== */
 .layout-container {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -69,10 +78,9 @@ button {
   width: 100%;
 }
 
-.filter-buttons-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.content-container {
+  padding: 20px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -86,7 +94,7 @@ button {
 }
 
 /* ==========================================================================
-   2. HEADER
+   3. HEADER ARCHITECTURE
    ========================================================================== */
 .main-header {
   background: #fff;
@@ -108,18 +116,14 @@ button {
   font-size: 1.15rem;
 }
 
-.content-container {
-  padding: 20px;
-  width: 100%;
-}
-
 /* ==========================================================================
-   3. SEARCH & TAGS
+   4. SEARCH FACET
    ========================================================================== */
 .search-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  margin-bottom: 24px;
 }
 
 #searchInput {
@@ -160,33 +164,167 @@ button {
   font-weight: 500;
 }
 
-/* Tag Cloud ------------------------------------------------------------ */
+/* ==========================================================================
+   5. PRIMARY FILTER CATEGORIES (FACETS)
+   ========================================================================== */
+.filter-buttons-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-btn {
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--text-main);
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s, color 0.2s;
+}
+
+.filter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Theme Mapped Dynamic Active States */
+.filter-btn[data-target="all"].active {
+  background: var(--text-main);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
+}
+
+.filter-btn[data-target="researchers"].active {
+  background: var(--bg-researcher-badge);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
+}
+
+.filter-btn[data-target="managers"].active {
+  background: var(--bg-manager-badge);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(237, 172, 0, 0.25);
+}
+
+.filter-btn[data-target="trainers"].active {
+  background: var(--bg-trainer-badge);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(21, 148, 158, 0.25);
+}
+
+/* ==========================================================================
+   6. VISIBILITY TOGGLE SWITCH SYSTEM
+   ========================================================================== */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 16px 4px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.toggle-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.switch-track {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.switch-track input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--bg-switch-off);
+  transition: background-color 0.2s var(--ease-out);
+  border-radius: 24px;
+}
+
+.switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: transform 0.2s var(--ease-out);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.switch-track input:checked + .switch-slider {
+  background-color: var(--bg-switch-on);
+}
+
+.switch-track input:checked + .switch-slider::before {
+  transform: translateX(22px);
+}
+
+.switch-track input:focus-visible + .switch-slider {
+  outline: 2px solid var(--color-tag-active);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   7. TAG CLOUD CLUSTER
+   ========================================================================== */
 .global-tag-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 20px 0 5px;
+  gap: 6px;
+  margin-top: 16px;
+  max-height: 500px;
+  opacity: 1;
+  visibility: visible;
+  transition: max-height 0.25s var(--ease-out), opacity 0.2s ease, margin 0.2s;
+  overflow: hidden;
 }
 
-.global-tag-btn,
-.filter-btn {
+/* Collapsed visual animation system */
+.global-tag-cloud.hidden {
+  display: flex !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0 !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.global-tag-btn {
   background: #fff;
   color: var(--text-main);
   border: none;
   border-radius: 20px;
   font-weight: 600;
   cursor: pointer;
+  padding: 8px 16px;
+  font-size: 0.75rem;
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s, color 0.2s;
 }
 
-.global-tag-btn {
-  padding: 8px 16px;
-  font-size: 0.75rem;
-}
-
-.global-tag-btn:hover,
-.filter-btn:hover {
+.global-tag-btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -197,53 +335,8 @@ button {
   box-shadow: 0 4px 12px rgba(13, 33, 115, 0.25);
 }
 
-/* Filter Buttons ------------------------------------------------------- */
-.filter-btn {
-  padding: 10px 18px;
-  font-size: 0.9rem;
-}
-
-.filter-btn.active {
-  background: var(--text-main);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
-}
-
-/* Tag Dropdown --------------------------------------------------------- */
-.tag-cloud-wrapper summary::-webkit-details-marker {
-  display: none;
-}
-
-.tag-cloud-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-tag-active);
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  transition: opacity 0.2s;
-}
-
-.tag-cloud-trigger:hover {
-  opacity: 0.8;
-}
-
-.tag-cloud-trigger::after {
-  content: "→";
-  display: inline-block;
-  transition: transform 0.2s;
-}
-
-.tag-cloud-wrapper[open] .tag-cloud-trigger::after {
-  transform: rotate(90deg);
-}
-
 /* ==========================================================================
-   4. ARTICLE CARDS
+   8. FILTERABLE ARTICLE CARDS
    ========================================================================== */
 .modules-grid {
   display: flex;
@@ -294,6 +387,7 @@ article.filterable:hover {
   text-decoration: underline;
 }
 
+/* Badges & Inline Action Tags */
 .badge {
   display: inline-block;
   padding: 5px 12px;
@@ -326,7 +420,7 @@ article.filterable:hover {
   box-shadow: 0 2px 6px rgba(13, 33, 115, 0.2);
 }
 
-/* Themes */
+/* Role Theme Injection Classes */
 article.filterable[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge); }
 article.filterable[data-id*="-researchers"] .discipline-badge { background: var(--bg-researcher-badge); color: #fff; }
 
@@ -334,274 +428,4 @@ article.filterable[data-id*="-managers"] { border-left-color: var(--bg-manager-b
 article.filterable[data-id*="-managers"] .discipline-badge { background: var(--bg-manager-badge); color: #fff; }
 
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
-article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
-
-.abstract-text {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 16px;
-  line-height: 1.6;
-}
-
-mark {
-  background: #fef531;
-  color: #92400e;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-/* ==========================================================================
-   5. ACTIONS & PAGINATION
-   ========================================================================== */
-.learning-path-actions {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.next-step-btn {
-  background: #27ae60;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-}
-
-.next-step-btn:hover {
-  background: #219653;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.25);
-}
-
-.share-btn,
-.close-article-btn {
-  background: #edf2f7;
-  color: #4a5568;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.share-btn:hover {
-  background: #e2e8f0;
-  color: var(--text-main);
-}
-
-.share-btn.copied {
-  background: #c6f6d5;
-  color: #22543d;
-}
-
-.close-article-btn {
-  margin-left: auto;
-}
-
-.close-article-btn:hover {
-  background: #fee2e2;
-  color: #9b1c1c;
-}
-
-.pagination-bar {
-  text-align: center;
-  margin-top: 40px;
-}
-
-.primary-btn {
-  background: var(--text-main);
-  color: #fff;
-  border: none;
-  padding: 14px 28px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-}
-
-.primary-btn:hover {
-  background: #000;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ==========================================================================
-   6. MARKDOWN BODY
-   ========================================================================== */
-.full-content {
-  margin-top: 24px;
-  animation: fadeIn 0.3s var(--ease-out);
-  overflow: hidden; /* Hindrer innholdet i å skape rykkete bevegelser under lasting */
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; } /* Fjernet translateY for å unngå at bunnen slåss mot høydeberegningen */
-  to { opacity: 1; }
-}
-
-.markdown-body {
-  color: var(--text-main);
-  font-size: 1rem;
-  line-height: 1.75;
-  content-visibility: auto; /* Sørger for mer stabil og effektiv rendering av innholdet */
-}
-
-.markdown-body :is(h1, h2, h3) {
-  color: #1a202c;
-  font-weight: 700;
-  margin: 32px 0 14px;
-  letter-spacing: -0.01em;
-}
-
-.markdown-body h1 { font-size: 1.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-.markdown-body h2 { font-size: 1.4rem; }
-.markdown-body h3 { font-size: 1.2rem; }
-
-.markdown-body :is(p, ul, ol) {
-  margin-bottom: 18px;
-}
-
-.markdown-body :is(ul, ol) {
-  padding-left: 24px;
-}
-
-.markdown-body li {
-  margin-bottom: 8px;
-}
-
-.markdown-body ul:has(input[type="checkbox"]) {
-  list-style: none;
-  padding-left: 4px;
-}
-
-.markdown-body input[type="checkbox"] {
-  margin-right: 12px;
-  transform: scale(1.2);
-  vertical-align: middle;
-  cursor: pointer;
-  accent-color: var(--color-tag-active);
-}
-
-.markdown-body blockquote {
-  border-left: 4px solid #cbd5e0;
-  color: #4a5568;
-  background: #f8fafc;
-  padding: 16px 20px;
-  margin: 24px 0;
-  border-radius: 4px;
-  font-style: italic;
-}
-
-.markdown-body pre {
-  background: #1a202c;
-  color: #edf2f7;
-  padding: 18px;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin-bottom: 18px;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.markdown-body code {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-  background: #f1f5f9;
-  color: #db2777;
-  padding: 3px 6px;
-  border-radius: 6px;
-}
-
-.markdown-body pre code {
-  background: transparent;
-  color: inherit;
-  padding: 0;
-  font-size: inherit;
-  border-radius: 0;
-}
-
-/* ==========================================================================
-   7. FOOTER & FEEDBACK
-   ========================================================================== */
-.feedback-box {
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px;
-  text-align: center;
-  margin-top: 25px;
-  box-shadow: var(--shadow-sm);
-}
-
-.feedback-box h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-main);
-}
-
-.main-footer {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  border-top: 1px solid var(--border-color);
-  margin-top: 8px;
-}
-
-/* ==========================================================================
-   8. DIMMING INACTIVE CARDS
-   ========================================================================== */
-/* Dim every card EXCEPT the one currently expanded — no !important needed */
-.modules-grid:has(.full-content) article.filterable:not(:has(.full-content)) {
-  opacity: 0.5;
-  filter: grayscale(60%);
-  transform: scale(0.98);
-  border-left-color: #cbd5e0;
-  box-shadow: none;
-  transition: opacity 0.3s, filter 0.3s, transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-}
-
-.modules-grid article.filterable:has(.full-content) {
-  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
-}
-
-/* ==========================================================================
-   9. BOTTOM TAGS
-   ========================================================================== */
-.article-tags-bottom {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
-}
-
-article.filterable:has(.full-content) .article-tags-bottom {
-  border-top: none;
-  margin-top: 32px;
-  padding-top: 0;
-}
-
-.tag-click-btn mark {
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-
-.tag-click-btn.active mark {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
+Vær forsiktig når du bruker kodenarticle.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }.abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}/* ==========================================================================9. ACTIONS AREA & FOOTER UTILITIES========================================================================== */.learning-path-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border-color);display: flex;gap: 12px;flex-wrap: wrap;}.next-step-btn {background: #27ae60;color: #fff;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;font-size: 0.9rem;cursor: pointer;box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);transition: background-color 0.2s, transform 0.2s;}.next-step-btn:hover {background: #219653;transform: translateY(-1px);}
