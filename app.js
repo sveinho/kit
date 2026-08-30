@@ -311,7 +311,7 @@ class KitApp {
         (a) => a.track === article.track && a.order === (article.order + 1)
       );
       const nextBtn = next
-        ? `<button class="next-step-btn" data-next-id="${next.id}">Next Module: ${this.#escapeHtml(next.title)} →</button>`
+        ? `<button class="next-step-btn" data-next-id="${next.id}">Next Module →</button>`
         : '';
 
       expandedHtml = `
