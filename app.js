@@ -380,7 +380,24 @@ class KitApp {
    * Kit Learning App - Part 4: Interaction Handlers, Utilities & DOM Ready
    */
   #onSearch(raw) {
-    this.#state.query = raw.trim().toLowerCase();
+    const cleanQuery = raw.trim().toLowerCase();
+    
+    // Hvis brukeren har skrevet 1 eller 2 tegn, tvinger vi søket til å være tomt.
+    // Dette hindrer at appen filtrerer vilt på enkeltbokstaver.
+    if (cleanQuery.length > 0 && cleanQuery.length < 3) {
+      this.#state.query = '';
+      this.#syncResetButton();
+      // Vi kjører ikke filteret ennå, men oppdaterer telleren for å gi diskret beskjed
+      const { searchCounter } = this.#refs;
+      if (searchCounter) {
+        searchCounter.textContent = 'Skriv minst 3 tegn for å søke...';
+      }
+      return;
+    }
+
+    // Når terskelen på 3 tegn er nådd (eller feltet tømmes helt), søker vi som normalt
+    this.#state.query = cleanQuery;
+    this.#syncUrl(this.#state.trackFilter !== 'all' ? { track: this.#state.trackFilter } : {});
     this.#syncResetButton();
     this.#filter(true);
   }
