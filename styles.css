@@ -55,8 +55,8 @@ button {
 }
 
 .invisible {
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* ==========================================================================
@@ -192,26 +192,26 @@ button {
   box-shadow: var(--shadow-md);
 }
 
-/* Theme Mapped Dynamic Active States */
-.filter-btn[data-target="all"].active {
+/* Theme Mapped Dynamic Active States - Matched to data-track */
+.filter-btn[data-track="all"].active {
   background: var(--text-main);
   color: #fff;
   box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
 }
 
-.filter-btn[data-target="researchers"].active {
+.filter-btn[data-track="researchers"].active {
   background: var(--bg-researcher-badge);
   color: #fff;
   box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
 }
 
-.filter-btn[data-target="managers"].active {
+.filter-btn[data-track="managers"].active {
   background: var(--bg-manager-badge);
   color: #fff;
   box-shadow: 0 4px 12px rgba(237, 172, 0, 0.25);
 }
 
-.filter-btn[data-target="trainers"].active {
+.filter-btn[data-track="trainers"].active {
   background: var(--bg-trainer-badge);
   color: #fff;
   box-shadow: 0 4px 12px rgba(21, 148, 158, 0.25);
@@ -301,7 +301,6 @@ button {
   overflow: hidden;
 }
 
-/* Collapsed visual animation system */
 .global-tag-cloud.hidden {
   display: flex !important;
   max-height: 0 !important;
@@ -387,7 +386,6 @@ article.filterable:hover {
   text-decoration: underline;
 }
 
-/* Badges & Inline Action Tags */
 .badge {
   display: inline-block;
   padding: 5px 12px;
@@ -428,4 +426,6 @@ article.filterable[data-id*="-managers"] { border-left-color: var(--bg-manager-b
 article.filterable[data-id*="-managers"] .discipline-badge { background: var(--bg-manager-badge); color: #fff; }
 
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
-Vær forsiktig når du bruker kodenarticle.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }.abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}/* ==========================================================================9. ACTIONS AREA & FOOTER UTILITIES========================================================================== */.learning-path-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border-color);display: flex;gap: 12px;flex-wrap: wrap;}.next-step-btn {background: #27ae60;color: #fff;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;font-size: 0.9rem;cursor: pointer;box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);transition: background-color 0.2s, transform 0.2s;}.next-step-btn:hover {background: #219653;transform: translateY(-1px);}
+article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
+
+.abstract-text {color: var(--text-muted);font-size: 0.95rem;margin-bottom: 16px;line-height: 1.6;}mark {background: #fef531;color: #92400e;padding: 2px 4px;border-radius: 4px;}/* ==========================================================================9. ACTIONS AREA & FOOTER UTILITIES========================================================================== */.learning-path-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border-color);display: flex;gap: 12px;flex-wrap: wrap;}.next-step-btn {background: #27ae60;color: #fff;border: none;padding: 12px 24px;border-radius: 8px;font-weight: 600;font-size: 0.9rem;cursor: pointer;box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);transition: background-color 0.2s, transform 0.2s;}.next-step-btn:hover {background: #219653;transform: translateY(-1px);}
