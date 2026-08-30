@@ -11,10 +11,11 @@
   --text-muted: #718096;
   --border-color: #e2e8f0;
 
-  /* Theme Role Colors */
-  --bg-researcher-badge: #f0447d;
-  --bg-manager-badge: #edac00;
-  --bg-trainer-badge: #15949e;
+  /* Theme Role Colors - Updated Palette */
+  --bg-info-badge: #f0447d;       /* Den rosa fargen flyttet til Information */
+  --bg-researcher-badge: #1e40af; /* Ny, stødig kongeblå for Researchers */
+  --bg-manager-badge: #edac00;    /* Beholdes */
+  --bg-trainer-badge: #15949e;    /* Beholdes */
 
   /* Switch & Tag Configs */
   --color-tag-active: #0d2173;
