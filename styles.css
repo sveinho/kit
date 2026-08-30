@@ -74,7 +74,7 @@ button {
 
 .control-panel {
   position: sticky;
-  top: 20px;
+  top: 94px; /* Endret fra 20px (74px headerhøyde + 20px ekstra luft under) */
   height: fit-content;
   width: 100%;
 }
