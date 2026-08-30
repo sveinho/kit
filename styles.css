@@ -201,15 +201,15 @@ button {
 
 /* Theme Mapped Dynamic Active States - Matched to data-track */
 .filter-btn[data-track="all"].active {
-  background: var(--text-main);
+  background: var(--bg-info-badge); /* Information-knappen blir nå rosa når aktiv */
   color: #fff;
-  box-shadow: 0 4px 12px rgba(26, 32, 44, 0.25);
+  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
 }
 
 .filter-btn[data-track="researchers"].active {
-  background: var(--bg-researcher-badge);
+  background: var(--bg-researcher-badge); /* Blir kongeblå når aktiv */
   color: #fff;
-  box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
 }
 
 .filter-btn[data-track="managers"].active {
@@ -223,6 +223,7 @@ button {
   color: #fff;
   box-shadow: 0 4px 12px rgba(21, 148, 158, 0.25);
 }
+
 
 /* ==========================================================================
    6. VISIBILITY TOGGLE SWITCH SYSTEM
