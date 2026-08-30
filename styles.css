@@ -426,6 +426,11 @@ article.filterable:hover {
 }
 
 /* Role Theme Injection Classes */
+/* Sørger for at Information-modulen (navigating-kit) får den rosa fargen */
+article.filterable[data-id*="navigating-kit"] { border-left-color: var(--bg-info-badge); }
+article.filterable[data-id*="navigating-kit"] .discipline-badge { background: var(--bg-info-badge); color: #fff; }
+
+/* Researchers bruker nå den nye, stødige blåfargen */
 article.filterable[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge); }
 article.filterable[data-id*="-researchers"] .discipline-badge { background: var(--bg-researcher-badge); color: #fff; }
 
@@ -434,6 +439,7 @@ article.filterable[data-id*="-managers"] .discipline-badge { background: var(--b
 
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
+
 
 /* Gjøre abstract-teksten tydeligere, helt svart og litt større */
 .abstract-text {
