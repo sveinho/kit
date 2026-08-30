@@ -33,12 +33,11 @@
         <aside class="control-panel">
             
             <!-- 1. Role Selection Button Row (Learning Paths) -->
-            <!-- Updated data attributes to use "data-target" for dynamic theme matching -->
             <div class="filter-buttons-wrapper">
-                <button class="filter-btn active" data-target="all">Info (All Tracks)</button>
-                <button class="filter-btn" data-target="researchers">Researchers</button>
-                <button class="filter-btn" data-target="managers">Managers</button>
-                <button class="filter-btn" data-target="trainers">Trainers</button>
+                <button class="filter-btn active" data-track="all">Info (All Tracks)</button>
+                <button class="filter-btn" data-track="researchers">Researchers</button>
+                <button class="filter-btn" data-track="managers">Managers</button>
+                <button class="filter-btn" data-track="trainers">Trainers</button>
             </div>
 
             <!-- 2. Visibility Toggle Switch System for Tags -->
@@ -51,7 +50,6 @@
             </div>
 
             <!-- 3. Target container where tags are injected dynamically -->
-            <!-- Cleaned up redundant wrapper nesting so JavaScript maps correctly -->
             <div id="globalTagCloud" class="global-tag-cloud"></div>
             
         </aside>
