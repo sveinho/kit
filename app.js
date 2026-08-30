@@ -480,7 +480,10 @@ class KitApp {
 
   #reset() {
     this.#state.query = '';
-    if (this.#refs.searchInput) this.#refs.searchInput.value = '';
+    if (this.#refs.searchInput) {
+      this.#refs.searchInput.value = '';
+      this.#refs.searchInput.classList.remove('active-search'); // Fjerner fargen ved nullstilling
+    }
     this.#state.activeId = null;
     this.#state.tagFilter = null;
     
@@ -494,6 +497,7 @@ class KitApp {
     this.#renderGlobalTagCloud();
     this.#filter(true);
   }
+
 
   async #copyShareLink(id, btn) {
     try {
