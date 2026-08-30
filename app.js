@@ -12,6 +12,7 @@ const SELECTORS = {
   loadMoreBtn: '#loadMoreBtn',
   globalTagCloud: '#globalTagCloud',
   filterBtn: '.filter-btn',
+  tagToggleCheckbox: '#tagToggleCheckbox', // Added hook for the new visual switch toggle
 };
 
 const CONFIG = {
@@ -87,11 +88,13 @@ class KitApp {
 
   async init() {
     this.#bindEvents();
+    // Proactively initialize the visibility state of the tag cloud based on the switch's initial HTML markup state
+    this.#handleTagVisibility();
     await this.#loadArticles();
   }
 
   #bindEvents() {
-    const { searchInput, resetBtn, loadMoreBtn, articlesContainer, globalTagCloud } = this.#refs;
+    const { searchInput, resetBtn, loadMoreBtn, articlesContainer, globalTagCloud, tagToggleCheckbox } = this.#refs;
 
     searchInput?.addEventListener('input', debounce((e) => this.#onSearch(e.target.value), CONFIG.debounceMs));
     resetBtn?.addEventListener('click', () => this.#reset());
@@ -105,14 +108,30 @@ class KitApp {
       if (btn) this.#toggleTag(btn.dataset.tag);
     });
 
+    // Added change listener for the new slide switch component
+    tagToggleCheckbox?.addEventListener('change', () => this.#handleTagVisibility());
+
     articlesContainer?.addEventListener('click', (e) => this.#onArticleClick(e));
 
     this._filterButtons = Array.from(document.querySelectorAll(SELECTORS.filterBtn));
     this._filterButtons.forEach((btn) =>
-      btn.addEventListener('click', () => this.#setTrackFilter(btn.dataset.track, btn))
+      // Aligned click handler mapping with the new "data-target" attribute standard used in the updated HTML/CSS markup
+      btn.addEventListener('click', () => this.#setTrackFilter(btn.dataset.target, btn))
     );
 
     window.addEventListener('popstate', () => this.#applyRoute());
+  }
+
+  // New private method inside the class layer to elegantly add/remove the CSS hidden engine classes without visual layout jumping
+  #handleTagVisibility() {
+    const { tagToggleCheckbox, globalTagCloud } = this.#refs;
+    if (!globalTagCloud || !tagToggleCheckbox) return;
+
+    if (tagToggleCheckbox.checked) {
+      globalTagCloud.classList.remove('hidden');
+    } else {
+      globalTagCloud.classList.add('hidden');
+    }
   }
 
   #syncUrl(params = {}, hash = '') {
@@ -128,11 +147,21 @@ class KitApp {
     }
     history.pushState({}, '', url);
   }
-
+}
   #applyRoute() {
     const url = new URL(location.href);
     const id = url.searchParams.get('id');
     const tag = url.searchParams.get('tag');
+    const track = url.searchParams.get('track');
+
+    // Sync state tracking variables with explicit parameters found in the current route URL string
+    this.#state.trackFilter = track || 'all';
+    
+    // Proactively update structural sidebar button visibility UI states to follow URL state updates
+    this._filterButtons.forEach(btn => {
+      const isTargetActive = btn.dataset.target === this.#state.trackFilter;
+      btn.classList.toggle('active', isTargetActive);
+    });
 
     if (id && this.#state.all.some((a) => a.id === id)) {
       this.#state.activeId = id;
@@ -273,9 +302,8 @@ class KitApp {
     const tagsHtml = (article.tags || []).map((tag) => {
       const activeCls = tag === this.#state.tagFilter ? ' active' : '';
       const tagHtml = this.#highlight(tag, words);
-      return `<button class="badge status-${tag.toLowerCase().trim()} tag-click-btn${activeCls}" data-tag="${tag}">#${tagHtml}</button>`;
+      return `<button class="badge tag-click-btn${activeCls}" data-tag="${tag}">#${tagHtml}</button>`;
     }).join(' ');
-
     let expandedHtml = '';
     if (isExpanded) {
       const md = this.#getMarkdownRenderer();
@@ -320,6 +348,7 @@ class KitApp {
     const cloud = this.#refs.globalTagCloud;
     if (!cloud) return;
 
+    // Build unique tag index tracking from our baseline module data model array
     const tags = new Set();
     this.#state.all.forEach((a) => a.tags?.forEach((t) => tags.add(t.trim())));
     if (tags.size === 0) {
@@ -363,21 +392,37 @@ class KitApp {
     const activeArticle = this.#state.activeId
       ? this.#state.all.find((a) => a.id === this.#state.activeId)
       : null;
+      
+    // Dynamically include the chosen target track to ensure persistence during routing parameter changes
+    const targetParams = { track };
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+
     if (activeArticle && track !== 'all' && activeArticle.track !== track) {
       this.#state.activeId = null;
-      this.#syncUrl(this.#state.tagFilter ? { tag: this.#state.tagFilter } : {});
+      this.#syncUrl(targetParams);
+    } else {
+      if (this.#state.activeId) targetParams.id = this.#state.activeId;
+      this.#syncUrl(targetParams);
     }
     
     this.#filter(true);
     
-    // Scroll to top of the content area when switching learning paths
+    // Scroll cleanly up to visual structural bounds when switching tracks
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   #toggleTag(tag) {
     const isActive = this.#state.tagFilter === tag;
     this.#state.tagFilter = isActive ? null : tag;
-    this.#syncUrl(this.#state.tagFilter ? { tag: this.#state.tagFilter } : {});
+    
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    if (this.#state.activeId) targetParams.id = this.#state.activeId;
+    
+    this.#syncUrl(targetParams);
     this.#syncResetButton();
     this.#renderGlobalTagCloud();
     this.#filter(true);
@@ -389,7 +434,14 @@ class KitApp {
       return;
     }
     this.#state.activeId = id;
-    this.#syncUrl({ id }, hash);
+    
+    const targetParams = { id };
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    
+    this.#syncUrl(targetParams, hash);
     this.#filter(false);
 
     const article = this.#state.all.find((a) => a.id === id);
@@ -401,16 +453,49 @@ class KitApp {
 
   #closeActive() {
     this.#state.activeId = null;
-    this.#syncUrl({});
+    
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+    
+    this.#syncUrl(targetParams);
     this.#filter(false);
   }
 
+  /* Utility helper scripts for proper runtime isolation protection */
+  #getMarkdownRenderer() {
+    if (this.#md) return this.#md;
+    if (typeof window.markdownit === 'function') {
+      this.#md = window.markdownit({ html: true, linkify: true });
+      return this.#md;
+    }
+    return null;
+  }
+
+  #escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
   #reset() {
     this.#state.query = '';
     if (this.#refs.searchInput) this.#refs.searchInput.value = '';
     this.#state.activeId = null;
     this.#state.tagFilter = null;
-    this.#syncUrl({});
+    
+    // Explicitly preserve the current learning track filter context state on hard reset cycles
+    const targetParams = {};
+    if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+      targetParams.track = this.#state.trackFilter;
+    }
+    
+    this.#syncUrl(targetParams);
     this.#refs.resetBtn?.classList.add('invisible');
     this.#renderGlobalTagCloud();
     this.#filter(true);
@@ -472,7 +557,14 @@ class KitApp {
 
     if (href.startsWith('#')) {
       event.preventDefault();
-      this.#syncUrl({ id: this.#state.activeId }, href);
+      
+      const targetParams = { id: this.#state.activeId };
+      if (this.#state.trackFilter && this.#state.trackFilter !== 'all') {
+        targetParams.track = this.#state.trackFilter;
+      }
+      if (this.#state.tagFilter) targetParams.tag = this.#state.tagFilter;
+      
+      this.#syncUrl(targetParams, href);
       this.#scrollToAnchor(href);
       return;
     }
@@ -553,6 +645,7 @@ class KitApp {
   }
 }
 
+// Global runtime starter invocation hook
 document.addEventListener('DOMContentLoaded', () => {
   const app = new KitApp();
   app.init();
