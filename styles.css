@@ -136,9 +136,11 @@ button {
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
+/* Stil for aktivt søkefelt med forbedret, men fortsatt lys pastellkontrast */
 #searchInput.active-search {
-  background-color: #f0f4ff; /* En svært lys og behagelig blåfarge */
-  border-color: var(--color-tag-active); /* Rammen matcher den blå temafargen din */
+  background-color: #dbeafe; /* Litt mørkere og klarere pastellblå (tilsvarer Tailwind blue-100) */
+  border-color: var(--color-tag-active); /* Beholder den stødige, mørkeblå rammen */
+  color: #1e3a8a; /* Gjør teksten inni feltet mørkeblå for krystallklar kontrast */
 }
 
 #searchInput:focus {
