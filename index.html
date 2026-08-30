@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- FAIR Signposting: Link to the external JSON-LD metadata -->
-  <link rel="describedby" 
-        type="application/ld+json" 
-        href="./metadata.jsonld">
+    <!-- FAIR Signposting: Link to the external JSON-LD metadata -->
+    <link rel="describedby" 
+          type="application/ld+json" 
+          href="./metadata.jsonld">
     
     <title>Support kit modules</title>
     
@@ -15,8 +15,7 @@
     <link rel="stylesheet" href="styles.css">
     
     <!-- 1. Last inn kjernebiblioteket for Markdown -->
-   <script src="markdown-it.min.js"></script>
-
+    <script src="markdown-it.min.js"></script>
 </head>
 <body>
     <!-- Main Navigation Bar -->
@@ -27,22 +26,41 @@
         </div>
     </header>
 
-    <!-- NYTT: Omgivende layout-beholder -->
+    <!-- Omgivende layout-beholder -->
     <div class="layout-container">
         
-        <!-- Endret fra <section> til <aside> for bedre semantikk som sidemeny -->
+        <!-- Sidemeny med kontroller og filtrering -->
         <aside class="control-panel">
             
             <!-- 1. Role Selection Button Row (Learning Paths) -->
+            <!-- Updated data attributes to use "data-target" for dynamic theme matching -->
             <div class="filter-buttons-wrapper">
-                <button class="filter-btn active" data-track="all">Info (All Tracks)</button>
-                <button class="filter-btn btn-researcher" data-track="researchers">Researchers</button>
-                <button class="filter-btn btn-manager" data-track="managers">Managers</button>
-                <button class="filter-btn btn-trainer" data-track="trainers">Trainers</button>
+                <button class="filter-btn active" data-target="all">Info (All Tracks)</button>
+                <button class="filter-btn" data-target="researchers">Researchers</button>
+                <button class="filter-btn" data-target="managers">Managers</button>
+                <button class="filter-btn" data-target="trainers">Trainers</button>
             </div>
 
-            <!-- 2. Search Field -->
-            <div class="search-wrapper" style="margin-top: 15px;">
+            <!-- 2. Visibility Toggle Switch System for Tags -->
+            <div class="toggle-container">
+                <span class="toggle-label">Show Tag Cloud</span>
+                <label class="switch-track" for="tagToggleCheckbox">
+                    <input type="checkbox" id="tagToggleCheckbox" checked>
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
+
+            <!-- 3. Target container where tags are injected dynamically -->
+            <!-- Cleaned up redundant wrapper nesting so JavaScript maps correctly -->
+            <div id="globalTagCloud" class="global-tag-cloud"></div>
+            
+        </aside>
+  
+        <!-- Core Dynamic Content Section -->
+        <main class="content-container">
+            
+            <!-- 4. Search Field Placement -->
+            <div class="search-wrapper">
                 <input 
                     type="text" 
                     id="searchInput" 
@@ -51,22 +69,9 @@
                 >
                 <button id="resetSearchBtn" class="invisible" title="Clear search filters">✕</button>
             </div>
-  
-               <details class="tag-cloud-wrapper">
-  <summary class="tag-cloud-trigger">Show/ hide tag cloud</summary>
-  <div class="global-tag-cloud">
-  <div id="globalTagCloud" class="global-tag-cloud"></div>
-  </div>
-  </details>
-        </aside>
-  
-        <!-- Core Dynamic Content Section -->
-        <main class="content-container">
       
-             <!-- Status indicator text -->
+            <!-- Status indicator text -->
             <div id="searchCounter" class="search-counter">Loading track registry index...</div>
-           
-           
               
             <!-- Target container where app.js will inject the module cards -->
             <div id="articlesContainer" class="modules-grid"></div>
@@ -81,7 +86,6 @@
             <div id="loadMoreWrapper" class="hidden pagination-bar">
                 <button id="loadMoreBtn" class="primary-btn">Load More Modules ↓</button>
             </div>
-
             
         </main>
 
@@ -93,6 +97,6 @@
     </footer>
 
     <!-- Load your combined JavaScript file containing Part 1, 2 and 3 -->
-     <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
