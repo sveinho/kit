@@ -143,6 +143,21 @@ class KitApp {
     }
     history.pushState({}, '', url);
   }
+
+     const elementRect = targetElement.getBoundingClientRect();
+    const absoluteElementTop = elementRect.top + window.pageYOffset;
+    
+    // NØYAKTIG BEREGNING FOR STICKY HEADER:
+    // Vi tar posisjonen til elementet, trekker fra 74px (høyden på headeren), 
+    // og trekker fra 20px ekstra for å gi en luftig og pen margin på toppen.
+    const finalScrollTarget = absoluteElementTop - 74 - 20;
+
+    // Rull silkemykt til den kalkulerte posisjonen
+    window.scrollTo({
+      top: finalScrollTarget,
+      behavior: 'smooth'
+    });
+  }
   /**
    * Kit Learning App - Part 2: Routing, Loading & Filtering Logic
    */
