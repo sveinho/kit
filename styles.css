@@ -433,12 +433,15 @@ article.filterable[data-id*="-managers"] .discipline-badge { background: var(--b
 article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-badge); }
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
 
+/* Gjøre abstract-teksten tydeligere, helt svart og litt større */
 .abstract-text {
-  color: var(--text-muted);
-  font-size: 0.95rem;
+  color: #000000;       /* Endret fra var(--text-muted) til ren, dyp svart */
+  font-size: 1.05rem;   /* Økt størrelsen litt fra standard (0.95rem) for bedre blikkfang */
+  font-weight: 400;     /* Beholder normal vekt, men den sorte fargen gjør den fyldigere */
   margin-bottom: 16px;
-  line-height: 1.6;
+  line-height: 1.6;     /* God linjeavstand sikrer at den forblir lettlest */
 }
+
 
 mark {
   background: #fef531;
