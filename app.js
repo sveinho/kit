@@ -592,23 +592,7 @@ class KitApp {
     }
   }
 
-  #scrollToAnchor(rawHash = '') {
-    const hash = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
-    const expanded = this.#refs.articlesContainer?.querySelector(
-      `[data-id="${this.#state.activeId}"]`
-    );
-    if (!expanded) return;
-
-    if (hash) {
-      let target = document.getElementById(hash);
-      if (!target && this.#state.activeId) {
-        target = document.getElementById(`${this.#state.activeId}--${hash}`);
-      }
-      if (target && expanded.contains(target)) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-    }
+ scroll-margin-top: 90px; 
 
     expanded.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
