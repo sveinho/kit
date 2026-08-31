@@ -363,7 +363,7 @@ article.filterable {
 }
 
 article.filterable:hover {
-  transform: translateX(4px);
+   /* testing disable transform: translateY(-4px); */
   box-shadow: var(--shadow-md);
 }
 
