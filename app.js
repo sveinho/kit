@@ -388,20 +388,20 @@ class KitApp {
   #onSearch(raw) {
     const cleanQuery = raw.trim().toLowerCase();
     
-    // Hvis brukeren har skrevet 1 eller 2 tegn, tvinger vi søket til å være tomt.
-    // Dette hindrer at appen filtrerer vilt på enkeltbokstaver.
+    // If the user has typed 1 or 2 characters, we force the search to be empty.
+    // This prevents the app from filtering wildly on single letters.
     if (cleanQuery.length > 0 && cleanQuery.length < 3) {
       this.#state.query = '';
       this.#syncResetButton();
-      // Vi kjører ikke filteret ennå, men oppdaterer telleren for å gi diskret beskjed
+      // We don't run the filter yet, but update the counter to give a subtle message
       const { searchCounter } = this.#refs;
       if (searchCounter) {
-        searchCounter.textContent = 'Skriv minst 3 tegn for å søke...';
+        searchCounter.textContent = 'Type at least 3 characters to search...';
       }
       return;
     }
 
-    // Når terskelen på 3 tegn er nådd (eller feltet tømmes helt), søker vi som normalt
+    // When the 3-character threshold is reached (or the field is completely emptied), we search normally
     this.#state.query = cleanQuery;
     this.#syncUrl(this.#state.trackFilter !== 'all' ? { track: this.#state.trackFilter } : {});
     this.#syncResetButton();
@@ -488,7 +488,7 @@ class KitApp {
     this.#state.query = '';
     if (this.#refs.searchInput) {
       this.#refs.searchInput.value = '';
-      this.#refs.searchInput.classList.remove('active-search'); // Fjerner fargen ved nullstilling
+      this.#refs.searchInput.classList.remove('active-search'); // Remove the color on reset
     }
     this.#state.activeId = null;
     this.#state.tagFilter = null;
@@ -647,13 +647,13 @@ class KitApp {
    #syncResetButton() {
     const { searchInput, resetBtn } = this.#refs;
     
-    // Sjekk om det faktisk står noe i input-feltet akkurat nå
+    // Check if there is actually text in the input field right now
     const hasText = searchInput && searchInput.value.trim().length > 0;
     
-    // Vis eller skjul slettekrysset (✕)
+    // Show or hide the delete button (✕)
     resetBtn?.classList.toggle('invisible', !hasText);
     
-    // Legg til eller fjern fargemarkeringen på selve søkefeltet
+    // Add or remove the color highlight on the search field itself
     if (searchInput) {
       searchInput.classList.toggle('active-search', hasText);
     }
