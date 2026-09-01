@@ -12,10 +12,10 @@
   --border-color: #e2e8f0;
 
   /* Theme Role Colors - Updated Palette */
-  --bg-info-badge: #f0447d;       /* Den rosa fargen flyttet til Information */
-  --bg-researcher-badge: #0d2173; /* Ny, stødig kongeblå for Researchers */
-  --bg-manager-badge: #edac00;    /* Beholdes */
-  --bg-trainer-badge: #15949e;    /* Beholdes */
+  --bg-info-badge: #f0447d;       /* The pink color moved to Information */
+  --bg-researcher-badge: #0d2173; /* New, sturdy royal blue for Researchers */
+  --bg-manager-badge: #edac00;    /* Retained */
+  --bg-trainer-badge: #15949e;    /* Retained */
 
   /* Switch & Tag Configs */
   --color-tag-active: #0d2173;
@@ -137,11 +137,11 @@ button {
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
-/* Stil for aktivt søkefelt med forbedret, men fortsatt lys pastellkontrast */
+/* Style for active search field with improved, but still light pastel contrast */
 #searchInput.active-search {
-  background-color: #dbeafe; /* Litt mørkere og klarere pastellblå (tilsvarer Tailwind blue-100) */
-  border-color: var(--color-tag-active); /* Beholder den stødige, mørkeblå rammen */
-  color: #1e3a8a; /* Gjør teksten inni feltet mørkeblå for krystallklar kontrast */
+  background-color: #dbeafe; /* Slightly darker and clearer pastel blue (equivalent to Tailwind blue-100) */
+  border-color: var(--color-tag-active); /* Retain the sturdy, dark blue border */
+  color: #1e3a8a; /* Make the text inside the field dark blue for crystal clear contrast */
 }
 
 #searchInput:focus {
@@ -201,13 +201,13 @@ button {
 
 /* Theme Mapped Dynamic Active States - Matched to data-track */
 .filter-btn[data-track="all"].active {
-  background: var(--bg-info-badge); /* Information-knappen blir nå rosa når aktiv */
+  background: var(--bg-info-badge); /* Information button now becomes pink when active */
   color: #fff;
   box-shadow: 0 4px 12px rgba(240, 68, 125, 0.25);
 }
 
 .filter-btn[data-track="researchers"].active {
-  background: var(--bg-researcher-badge); /* Blir kongeblå når aktiv */
+  background: var(--bg-researcher-badge); /* Becomes royal blue when active */
   color: #fff;
   box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
 }
@@ -426,11 +426,11 @@ transform: translateY(-2px);
 }
 
 /* Role Theme Injection Classes */
-/* Sørger for at Information-modulen (navigating-kit) får den rosa fargen */
+/* Ensures that the Information module (navigating-kit) gets the pink color */
 article.filterable[data-id*="navigating-kit"] { border-left-color: var(--bg-info-badge); }
 article.filterable[data-id*="navigating-kit"] .discipline-badge { background: var(--bg-info-badge); color: #fff; }
 
-/* Researchers bruker nå den nye, stødige blåfargen */
+/* Researchers now use the new, sturdy blue color */
 article.filterable[data-id*="-researchers"] { border-left-color: var(--bg-researcher-badge); }
 article.filterable[data-id*="-researchers"] .discipline-badge { background: var(--bg-researcher-badge); color: #fff; }
 
@@ -441,23 +441,23 @@ article.filterable[data-id*="-trainers"] { border-left-color: var(--bg-trainer-b
 article.filterable[data-id*="-trainers"] .discipline-badge { background: var(--bg-trainer-badge); color: #fff; }
 
 
-/* Gjøre abstract-teksten tydeligere, helt svart og litt større */
+/* Make abstract text clearer, completely black and slightly larger */
 .abstract-text {
-  color: #000000;       /* Endret fra var(--text-muted) til ren, dyp svart */
-  font-size: 1.00rem;   /* Økt størrelsen litt fra standard (0.95rem) for bedre blikkfang */
-  font-weight: 300;     /* Beholder normal vekt, men den sorte fargen gjør den fyldigere */
+  color: #000000;       /* Changed from var(--text-muted) to pure, deep black */
+  font-size: 1.00rem;   /* Increased size slightly from default (0.95rem) for better visibility */
+  font-weight: 300;     /* Keep normal weight, but the black color makes it fuller */
   margin-bottom: 16px;
-  line-height: 1.6;     /* God linjeavstand sikrer at den forblir lettlest */
+  line-height: 1.6;     /* Good line height ensures it remains easy to read */
 }
 
 
 mark {
   background: #fef531;
   color: #92400e;
-  padding: 0;           /* Fjerner all ekstra indre luft som dytter teksten unna */
-  margin: 0;            /* Sikrer at det ikke blir glipper til resten av ordet */
-  border-radius: 2px;   /* Beholder en bitteliten pen avrunding på hjørnene */
-  display: inline;      /* Tvinger elementet til å flyte 100 % i ett med bokstavene rundt */
+  padding: 0;           /* Remove all extra inner space that pushes text away */
+  margin: 0;            /* Ensures there are no gaps to the rest of the word */
+  border-radius: 2px;   /* Keep a tiny nice rounding on the corners */
+  display: inline;      /* Force the element to flow 100% inline with surrounding letters */
 }
 
 /* ==========================================================================
@@ -473,7 +473,7 @@ mark {
   align-items: center;
 }
 
-/* Den grønne "Next Module"-knappen - nå nedtonet, diskret med fast bredde */
+/* The green "Next Module" button - now muted, subtle with fixed width */
 .next-step-btn {
   background: #ebfbee;
   color: #2b8a3e;
@@ -498,7 +498,7 @@ mark {
   box-shadow: var(--shadow-md);
 }
 
-/* Felles styling for sekundære handlingsknapper (Share og Close) */
+/* Common styling for secondary action buttons (Share and Close) */
 .share-btn,
 .close-article-btn {
   background: #fff;
@@ -529,7 +529,7 @@ mark {
   background: #fff5f5;
 }
 
-/* Beholderen for taggene som ligger helt i bunnen av artikkel-kortet */
+/* Container for tags that sits at the very bottom of article card */
 .article-tags-bottom {
   margin-top: 20px;
   display: flex;
@@ -614,28 +614,28 @@ mark {
   animation: fadeInContent 0.25s var(--ease-out) forwards;
   will-change: opacity, transform;
 }
-/* Beholderen for Load More-knappen i bunnen av hovedinnholdet */
+/* Container for Load More button at the bottom of main content */
 .pagination-bar {
   display: flex;
-  justify-content: center; /* Sørger for at knappen blir liggende midt på skjermen sidelengs */
+  justify-content: center; /* Ensures the button stays centered on screen horizontally */
   align-items: center;
   width: 100%;
   margin-top: 30px;
   padding: 20px 0;
 }
 
-/* Selve "Load More Modules"-knappen */
+/* The actual "Load More Modules" button */
 .primary-btn {
-  background: #f0f4ff; /* En svært lys, behagelig blåfarge som matcher det aktive søkefeltet */
-  color: var(--color-tag-active); /* Mørkeblå tekst */
-  border: 1px solid #bfdbfe; /* Tynn lys blå ramme */
+  background: #f0f4ff; /* A very light, pleasant blue color that matches the active search field */
+  color: var(--color-tag-active); /* Dark blue text */
+  border: 1px solid #bfdbfe; /* Thin light blue border */
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   
-  /* Fast bredde slik du har på de andre handlingsknappene */
+  /* Fixed width like you have on the other action buttons */
   width: 240px; 
   text-align: center;
   overflow: hidden;
@@ -646,9 +646,9 @@ mark {
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background-color 0.2s;
 }
 
-/* Hover-effekt når brukeren holder musa over knappen */
+/* Hover effect when user hovers over the button */
 .primary-btn:hover {
-  background: #dbeafe; /* Litt dypere pastellblå ved hover */
+  background: #dbeafe; /* Slightly deeper pastel blue on hover */
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
