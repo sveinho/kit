@@ -29,6 +29,14 @@ The words in a title and abstract and tags (defined in the file index.json) are 
 markdown-it is the basis for parsing markdown into html, used together also with the styling from the css file and javascript code in the app.js file. 
 This solution will run on any web server.
 
+comments that needs translation in app.js: 
+Lines 391-392: Search threshold explanation
+Line 396: Filter execution note
+Line 404: Normal search explanation
+Line 491: Reset color removal
+Lines 650, 653, 656: Reset button sync function comments
+
+
 ## The use of Markdown-it is in this solution based on the original MIT License for the markdown-it javascript:
 
 https://github.com/markdown-it/markdown-it?tab=MIT-1-ov-file 
