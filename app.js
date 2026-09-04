@@ -257,8 +257,15 @@ class KitApp {
 
     this.#state.filtered = result;
     if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
+    this.#oppdaterKontekstTreff(isSearching, query, result);
+
     this.#render();
   }
+
+
+
+
+
   
   /**
    * Kit Learning App - Part 3: UI Rendering & HTML Generation
