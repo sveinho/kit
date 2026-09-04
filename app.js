@@ -208,14 +208,13 @@ class KitApp {
       this.#render();
     }
   }
+this.#state.filtered = result;
+    if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
+    
+    // --> ENDRET: Bruker 'this.#state.query' i stedet for 'query'
+    this.#oppdaterKontekstTreff(isSearching, this.#state.query, result);
 
-  async #ensureLoadedAndScroll(articleId, hash) {
-    const article = this.#state.all.find((a) => a.id === articleId);
-    if (!article) return;
-    if (!article.markdownContent) {
-      await this.#loadMarkdown(article);
-    }
-    requestAnimationFrame(() => this.#scrollToAnchor(hash));
+    this.#render();
   }
 
   #filter(resetPagination = false) {
@@ -258,7 +257,85 @@ class KitApp {
     this.#state.filtered = result;
     if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
     this.#oppdaterKontekstTreff(isSearching, query, result);
+/**
+   * Genererer og viser tekstutklipp i kontekst basert på søkeordet
+   */
+  #oppdaterKontekstTreff(isSearching, query, filtrerteArtikler) {
+    const snippetsContainer = document.getElementById('snippets-container');
+    const resultsArea = document.getElementById('results-area');
+    const resultsCount = document.getElementById('results-count');
+    
+    if (!snippetsContainer || !resultsArea) return;
 
+    snippetsContainer.innerHTML = ''; // Tømmer gamle treff
+
+    // Hvis brukeren ikke søker, eller søkefeltet er tomt, skjuler vi området
+    if (!isSearching || !query.trim()) {
+      resultsArea.classList.add('hidden');
+      return;
+    }
+
+    const cleanQuery = query.trim().toLowerCase();
+    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+    let matchCount = 0;
+
+    filtrerteArtikler.forEach(article => {
+      // Siden markdownContent hentes asynkront ved klikk, søker vi i abstract (sammendraget)
+      // som alltid ligger klart i index.json
+      const tekstKilde = article.abstract || '';
+      if (!tekstKilde) return;
+
+      // Del opp sammendraget i setninger
+      const setninger = tekstKilde.split(/[.!?]+/);
+
+      setninger.forEach(setning => {
+        if (setning.toLowerCase().includes(cleanQuery)) {
+          matchCount++;
+          
+          // Uthev søkeordet
+          const uthevetTekst = setning.trim().replace(regex, '<mark>$1</mark>');
+
+          const snippetDiv = document.createElement('div');
+          snippetDiv.className = 'snippet-item';
+          snippetDiv.innerHTML = `
+            <div class="snippet-source">Funnet i: ${this.#escapeHtml(article.title ?? '')}</div>
+            <div class="snippet-text">... ${uthevetTekst} ...</div>
+          `;
+
+          // Klikk-håndtering som integreres med ditt rutesystem
+          snippetDiv.addEventListener('click', () => {
+            this.#state.activeId = article.id;
+            
+            // Oppdater nettadressen slik appen din forventer i Part 2
+            this.#syncUrl({ id: article.id, track: this.#state.trackFilter });
+            
+            // Trigger filter og innlasting av Markdown
+            this.#filter(false);
+            this.#ensureLoadedAndScroll(article.id, '');
+
+            // Bla jevnt ned til den åpnede modulen
+            setTimeout(() => {
+              const target = document.querySelector(`article[data-id="${article.id}"]`);
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 150);
+          });
+
+          snippetsContainer.appendChild(snippetDiv);
+        }
+      });
+    });
+
+    // Vis eller skjul treff-boksen basert på om vi fant faktiske teksttreff
+    if (matchCount > 0) {
+      if (resultsCount) resultsCount.textContent = `Fant ${matchCount} teksttreff i sammendragene:`;
+      resultsArea.classList.remove('hidden');
+    } else {
+      resultsArea.classList.add('hidden');
+    }
+  }
     this.#render();
   }
 
