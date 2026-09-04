@@ -208,13 +208,14 @@ class KitApp {
       this.#render();
     }
   }
-this.#state.filtered = result;
-    if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
-    
-    // --> ENDRET: Bruker 'this.#state.query' i stedet for 'query'
-    this.#oppdaterKontekstTreff(isSearching, this.#state.query, result);
 
-    this.#render();
+  async #ensureLoadedAndScroll(articleId, hash) {
+    const article = this.#state.all.find((a) => a.id === articleId);
+    if (!article) return;
+    if (!article.markdownContent) {
+      await this.#loadMarkdown(article);
+    }
+    requestAnimationFrame(() => this.#scrollToAnchor(hash));
   }
 
   #filter(resetPagination = false) {
@@ -256,93 +257,8 @@ this.#state.filtered = result;
 
     this.#state.filtered = result;
     if (resetPagination) this.#state.displayed = CONFIG.itemsPerPage;
-    this.#oppdaterKontekstTreff(isSearching, query, result);
-/**
-   * Genererer og viser tekstutklipp i kontekst basert på søkeordet
-   */
-  #oppdaterKontekstTreff(isSearching, query, filtrerteArtikler) {
-    const snippetsContainer = document.getElementById('snippets-container');
-    const resultsArea = document.getElementById('results-area');
-    const resultsCount = document.getElementById('results-count');
-    
-    if (!snippetsContainer || !resultsArea) return;
-
-    snippetsContainer.innerHTML = ''; // Tømmer gamle treff
-
-    // Hvis brukeren ikke søker, eller søkefeltet er tomt, skjuler vi området
-    if (!isSearching || !query.trim()) {
-      resultsArea.classList.add('hidden');
-      return;
-    }
-
-    const cleanQuery = query.trim().toLowerCase();
-    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    let matchCount = 0;
-
-    filtrerteArtikler.forEach(article => {
-      // Siden markdownContent hentes asynkront ved klikk, søker vi i abstract (sammendraget)
-      // som alltid ligger klart i index.json
-      const tekstKilde = article.abstract || '';
-      if (!tekstKilde) return;
-
-      // Del opp sammendraget i setninger
-      const setninger = tekstKilde.split(/[.!?]+/);
-
-      setninger.forEach(setning => {
-        if (setning.toLowerCase().includes(cleanQuery)) {
-          matchCount++;
-          
-          // Uthev søkeordet
-          const uthevetTekst = setning.trim().replace(regex, '<mark>$1</mark>');
-
-          const snippetDiv = document.createElement('div');
-          snippetDiv.className = 'snippet-item';
-          snippetDiv.innerHTML = `
-            <div class="snippet-source">Funnet i: ${this.#escapeHtml(article.title ?? '')}</div>
-            <div class="snippet-text">... ${uthevetTekst} ...</div>
-          `;
-
-          // Klikk-håndtering som integreres med ditt rutesystem
-          snippetDiv.addEventListener('click', () => {
-            this.#state.activeId = article.id;
-            
-            // Oppdater nettadressen slik appen din forventer i Part 2
-            this.#syncUrl({ id: article.id, track: this.#state.trackFilter });
-            
-            // Trigger filter og innlasting av Markdown
-            this.#filter(false);
-            this.#ensureLoadedAndScroll(article.id, '');
-
-            // Bla jevnt ned til den åpnede modulen
-            setTimeout(() => {
-              const target = document.querySelector(`article[data-id="${article.id}"]`);
-              if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-              }
-            }, 150);
-          });
-
-          snippetsContainer.appendChild(snippetDiv);
-        }
-      });
-    });
-
-    // Vis eller skjul treff-boksen basert på om vi fant faktiske teksttreff
-    if (matchCount > 0) {
-      if (resultsCount) resultsCount.textContent = `Fant ${matchCount} teksttreff i sammendragene:`;
-      resultsArea.classList.remove('hidden');
-    } else {
-      resultsArea.classList.add('hidden');
-    }
-  }
     this.#render();
   }
-
-
-
-
-
   
   /**
    * Kit Learning App - Part 3: UI Rendering & HTML Generation
@@ -361,89 +277,7 @@ this.#state.filtered = result;
       loadMoreWrapper?.classList.add('hidden');
       return;
     }
-/**
-   * Genererer og viser tekstutklipp i kontekst basert på søkeordet
-   */
-  #oppdaterKontekstTreff(isSearching, query, filtrerteArtikler) {
-    // Sjekk at HTML-elementene eksisterer i din index.html
-    const snippetsContainer = document.getElementById('snippets-container');
-    const resultsArea = document.getElementById('results-area');
-    const resultsCount = document.getElementById('results-count');
-    
-    if (!snippetsContainer || !resultsArea) return;
 
-    snippetsContainer.innerHTML = ''; // Tøm gamle treff
-
-    // Hvis brukeren ikke søker, eller søkefeltet er tomt, skjuler vi området
-    if (!isSearching || !query.trim()) {
-      resultsArea.classList.add('hidden'); // Bruker 'hidden' siden du har den i CSS fra før
-      return;
-    }
-
-    const words = query.split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      resultsArea.classList.add('hidden');
-      return;
-    }
-
-    // Vi tar det første ordet (slik scoreOf-funksjonen din gjør) for stabil matching
-    const firstWord = words[0];
-    const escapedQuery = firstWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    let matchCount = 0;
-
-    filtrerteArtikler.forEach(article => {
-      // Vi søker i markdownContent før markdown-it har gjort det om til HTML-tagger
-      const innhold = article.markdownContent || '';
-      if (!innhold) return;
-
-      // Del opp teksten i setninger
-      const setninger = innhold.split(/[.!?]+/);
-
-      setninger.forEach(setning => {
-        if (setning.toLowerCase().includes(firstWord.toLowerCase())) {
-          matchCount++;
-          
-          // Uthev søkeordet ved hjelp av din eksisterende eller vår enkle mark-metode
-          const uthevetTekst = setning.trim().replace(regex, '<mark>$1</mark>');
-
-          const snippetDiv = document.createElement('div');
-          snippetDiv.className = 'snippet-item';
-          snippetDiv.innerHTML = `
-            <div class="snippet-source">Funnet i: ${this.#escapeHtml(article.title ?? '')}</div>
-            <div class="snippet-text">... ${uthevetTekst} ...</div>
-          `;
-
-          // Klikk-håndtering: Åpne og bla ned til artikkelen
-          snippetDiv.addEventListener('click', () => {
-            // Siden appen din bruker activeId i staten for å vite hva som er åpent:
-            this.#state.activeId = article.id;
-            
-            // Kjør en ny render for å faktisk tegne den åpnede modulen på skjermen
-            this.#render();
-
-            // Bla jevnt ned til den åpnede modulen
-            setTimeout(() => {
-              const target = document.querySelector(`article[data-id="${article.id}"]`);
-              if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-              }
-            }, 50); // En ørliten forsinkelse så HTML-en rekker å tegne seg ut først
-          });
-
-          snippetsContainer.appendChild(snippetDiv);
-        }
-      });
-    });
-
-    // Vis eller skjul treff-boksen basert på om vi fant faktiske teksttreff
-    if (matchCount > 0) {
-      if (resultsCount) resultsCount.textContent = `Fant ${matchCount} teksttreff i kontekst:`;
-      resultsArea.classList.remove('hidden');
-    } else {
-      resultsArea.classList.add('hidden');
-    }
-  }
     const page = filtered.slice(0, displayed);
     articlesContainer.innerHTML = page.map((a) => this.#articleHTML(a)).join('');
 
